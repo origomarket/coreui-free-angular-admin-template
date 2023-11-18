@@ -17,6 +17,7 @@ import {
 } from 'rxjs';
 import {fromPromise} from "rxjs/internal/observable/innerFrom";
 import {Router} from "@angular/router";
+import {ProductImagesHelperService} from "@features/products/services/product-images-helper.service";
 
 
 @Component({
@@ -29,41 +30,16 @@ export class ProductsOverviewComponent implements OnInit {
 
   constructor(readonly productsService: ProductsService,
      readonly authSvc: AuthService,
-      private readonly resizeImageService: ResizeImagesService,
+      private readonly resizeImageService: ProductImagesHelperService,
       private readonly router: Router) { }
 
   ngOnInit(): void {
     this.products = this.productsService.fetchProducts(this.authSvc.authenticatedUser?.supplierId!)
     .pipe(map((products:Product[]) => {
-      return products.map( p => {
-        let defaultImage = of('assets/img/avatars/1.jpg');
-        let productResizedImages = p.imagesUrl?.map((image,i) => {
-           return fromPromise( this.createFileFromURL(image, `img-${p.name}-${i}`))
-              .pipe(
-                  mergeMap(file => !!file ? this.resizeImageService.resizeImage2(file, 100, 200, 100, 200) : defaultImage)
-              );
-        });
-        if(productResizedImages && productResizedImages?.length <= 0) {
-          // if no images available display at least the default image
-          productResizedImages?.push(defaultImage)
-        }
-
-        return Object.assign(p, { imagesUrl: productResizedImages})
-      })
+      return products.map( p => this.resizeImageService.resizeProductImages(p))
     }));
   }
 
-  async createFileFromURL(url: string, filename: string): Promise<File | undefined> {
-    try {
-      let response = await fetch(url);
-      let blob = await response.blob();
-      const file = new File([blob], filename);
-      return file;  
-    }catch(e){
-      console.error('Error creating iamge file from URL:', e);
-    }
-    return undefined;
-  }
 
   deepCopy(obj: any, seen?: Map<Object, Object>): any {
     var copy: any;

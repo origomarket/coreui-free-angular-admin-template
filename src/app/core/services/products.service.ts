@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFirestore, QueryFn } from '@angular/fire/compat/firestore';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Product } from '@core/model/product';
-import { Observable, of, tap } from 'rxjs';
+import {map, Observable, of, tap} from 'rxjs';
 import {NgxImageCompressService} from 'ngx-image-compress';
 
 @Injectable({
@@ -15,8 +15,15 @@ export class ProductsService {
   fetchProducts(customerId: string, queryFn?: QueryFn): Observable<Product[]> {
 
     return this.afs.collection<Product>(`suppliers/${customerId}/products`, queryFn)
-    .valueChanges()
-    
+        .snapshotChanges()
+        .pipe(map((products) =>
+            /* We need to add firestore id to the product in order to modify the product from product-detail */
+            products.map((p) => {
+                const productWithFirestoreId = p.payload.doc.data();
+                productWithFirestoreId.fsId = p.payload.doc.id ;
+                return productWithFirestoreId;
+            })
+        ))
     // JUST FOR TEST
     /*return of([
       {

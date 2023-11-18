@@ -17,24 +17,36 @@
                         <c-carousel-control [routerLink] caption="Next" direction="next"></c-carousel-control>
                     </c-carousel>
                     <form [formGroup]="productForm!">
-                        <div class="mb-3">
-                            <label for="code">Codice Fornitore:</label>
-                            <input id="code" class="form-control" type="text" [value]="product.code" readOnly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="type">Tipo:</label>
-                            <input id="type" class="form-control" type="text" [value]="product.type" readOnly>
-                        </div>
-                        <div class="form-group">
-                            <label for="description">Description:</label>
-                            <textarea id="description" class="form-control" rows="3" formControlName="description"></textarea>
+                        <c-input-group class="mb-3">
+                            <span cInputGroupText id="code-desc-id">Codice Fornitore</span>
+                            <input cFormControl
+                                   formControlName="code"
+                                   id="code" type="text" aria-describedby="code-desc-id"
+                                   aria-label="Codice Fornitore"
+                                   [value]="codeControl.value">
+                            <button cButton color="secondary" type="button" variant="outline" [disabled]="codeControl?.invalid" (click)="updateCode()">aggiorna</button>
+                            <c-form-feedback *ngIf="codeControl?.invalid"
+                                             class="custom-invalid-feedback"
+                                             [valid]="false">{{firstErroMessage(codeControl)}}</c-form-feedback>
+                        </c-input-group>
+
+                        <c-input-group class="mb-3">
+                            <span cInputGroupText id="type-desc-id">Tipo</span>
+                            <input cFormControl id="type" type="text" aria-describedby="type-desc-id" aria-label="Tipo" [value]="product.type" readOnly>
+                        </c-input-group>
+
+                        <c-input-group class="mb-3">
+                            <span cInputGroupText id="desc-desc-id">Descrizione</span>
+                            <textarea formControlName="description" aria-label="Aggiorna Descrizione" cFormControl>{{descriptionControl.value}}</textarea>
+                            <button cButton color="secondary" type="button" variant="outline" [disabled]="descriptionControl?.invalid" (click)="updateDesc()">aggiorna</button>
                             <c-form-feedback *ngIf="descriptionControl?.invalid"
                                              class="custom-invalid-feedback"
                                              [valid]="false">{{firstErroMessage(descriptionControl)}}</c-form-feedback>
-                        </div>
-                        <div class="mb-3">
-                            <label cLabel for="stock">Stock: {{stockControl?.value}}</label>
-                            <c-alert *ngIf="stockInfo()" [color]="stockInfo()!">Low stock!</c-alert>
+                        </c-input-group>
+
+                        <c-input-group class="mb-3">
+                            <span cInputGroupText id="stock-desc-id">Stock {{stockControl?.value}}</span>
+                            <c-alert *ngIf="stockInfoIndicator" [color]="stockInfoIndicator">Sotto scorta!</c-alert>
                             <input required
                                    formControlName="stock"
                                    id="stock"
@@ -42,13 +54,12 @@
                                    max="{{productConfig?.maxStockIncrement}}"
                                    min="{{productConfig?.minStockIncrement}}"
                                    step="{{productConfig?.stockStepIncrement}}"
+                                   (change)="updateStock(true)"
                                    type="range"/>
-                            <c-form-feedback *ngIf="stockControl?.invalid && stockControl?.touched"
-                                             class="custom-invalid-feedback"
-                                             [valid]="false">{{firstErroMessage(stockControl)}}</c-form-feedback>
-                        </div>
-                        <div class="mb-3">
-                            <label cLabel for="unitPrice">Prezzo: {{priceControl.value}} {{productConfig?.currency}}</label>
+                        </c-input-group>
+
+                        <c-input-group class="mb-3">
+                            <span cInputGroupText id="price-desc-id">Prezzo {{priceControl.value}} {{productConfig?.currency}}</span>
                             <input required
                                    formControlName="unitPrice"
                                    id="unitPrice"
@@ -56,14 +67,14 @@
                                    max="{{productConfig?.maxUnitPrice}}"
                                    min="{{productConfig?.minUnitPrice}}"
                                    step="{{productConfig?.priceStepIncrement}}"
-                                   type="range"/>
-                            <c-form-feedback *ngIf="priceControl?.invalid && priceControl?.touched"
-                                             class="custom-invalid-feedback"
-                                             [valid]="false">{{firstErroMessage(priceControl)}}</c-form-feedback>
-                        </div>
+                                   type="range"
+                                   (change)="adjustUnitPrice()"/>
+                        </c-input-group>
                     </form>
                 </c-card-body>
             </c-card>
         </c-col>
     </c-row>
 </c-container>
+<c-toaster placement="top-end" position="absolute" id="product-detail-toaster" #toaster>
+</c-toaster>

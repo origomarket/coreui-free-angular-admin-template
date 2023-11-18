@@ -10,7 +10,8 @@ export class Product {
      readonly stockLastIncrement: number,
      readonly stockLastUpdateDate: Date,
      readonly currency: Currency = Currency.euro,
-     public imagesUrl?: any[]){
+     public imagesUrl?: any[],
+     public fsId?: string){
     }
 }
 
