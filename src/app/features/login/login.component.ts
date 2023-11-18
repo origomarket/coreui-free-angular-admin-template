@@ -1,13 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import {NavigationEnd, NavigationError, NavigationStart, Router} from '@angular/router';
 import { ReactiveFormConfig, RxwebValidators } from '@rxweb/reactive-form-validators';
 import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  templateUrl: './login.component.html'
 })
 export class LoginComponent implements OnInit {
 
@@ -37,4 +36,7 @@ export class LoginComponent implements OnInit {
 
   }
 
+  register() {
+    this.router.navigateByUrl("register");
+  }
 }
