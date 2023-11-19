@@ -1,0 +1,8 @@
+[
+  {
+    "origin": ["https://origo-supplier.firebaseapp.com", "https://origo-supplier.web.app"],
+    "method": ["GET"],
+    "responseHeader": ["Content-Type"],
+    "maxAgeSeconds": 3600
+  }
+]
