@@ -192,8 +192,9 @@ export class CreateProductComponent implements OnInit{
     .pipe(
       map(urls => this.productFormDataToModel(this.pInfo, urls)),
       flatMap((product: Product) => {
-        const obj = Object.assign({}, product)
-        return productsRef.add(obj)
+        const productClone = Object.assign({}, product);
+        delete productClone.fsId;
+        return productsRef.add(productClone)
       })
     )
     .subscribe({
@@ -202,6 +203,7 @@ export class CreateProductComponent implements OnInit{
       },
       error: e => {
         this.actionNotificationService.pushNotification({ message: `Creazione del prodotto fallita!`, result: Result.ERROR, title: 'Gestione Prodotto' })
+        console.log(`Creazione del prodotto fallita: ${e}`);
       },
       complete: () => {
         this.router.navigateByUrl('/products/overview')
