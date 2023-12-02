@@ -1,7 +1,7 @@
 import { INavData } from '@coreui/angular';
 
 export const navItems: INavData[] = [
-  {
+  /*{
     name: 'Dashboard',
     url: '/dashboard',
     iconComponent: { name: 'cil-speedometer' },
@@ -28,23 +28,25 @@ export const navItems: INavData[] = [
   {
     name: 'ORIGO',
     title: true
-  },
+  },*/
   {
-    name: 'PRODOTTI',
+    name: 'Gestione Prodotti',
     url: '/products',
-    iconComponent: { name: 'cil-puzzle' },
+    iconComponent: { name: 'cil-drink-alcohol' },
     children: [
       {
-        name: 'Crea',
-        url: '/products/create'
+        name: 'Crea nuovo',
+        url: '/products/create',
+        iconComponent: { name: 'cil-clipboard' }
       },
       {
-        name: 'Vista',
-        url: '/products/overview'
+        name: 'I miei prodotti',
+        url: '/products/overview',
+        iconComponent: { name: 'cil-menu' }
       }
     ]
   },
-  {
+/*  {
     name: 'Components',
     title: true
   },
@@ -255,5 +257,5 @@ export const navItems: INavData[] = [
         url: '/500'
       }
     ]
-  },
+  },*/
 ];

@@ -14,7 +14,8 @@ const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['/login']);
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'dashboard',
+    //redirectTo: 'dashboard',
+    redirectTo: 'products/overview',
     pathMatch: 'full',
   },
   {
@@ -33,6 +34,7 @@ const routes: Routes = [
       },
       { 
         path: 'products',
+        ...canActivate(redirectUnauthorizedToLogin),
         loadChildren: () => import('./features/products/products.module').then(m => m.ProductsModule)
       },
       {

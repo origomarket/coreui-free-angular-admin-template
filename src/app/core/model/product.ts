@@ -1,17 +1,19 @@
+import {ProductType} from "@core/model/product-type";
+
 export class Product {
     public constructor(
-     readonly code: string, 
-     readonly name: string,
-     readonly type: string,
-     readonly producerName: string,
-     readonly description: string,
-     readonly unitPrice: number,
-     readonly stock: number,
-     readonly stockLastIncrement: number,
-     readonly stockLastUpdateDate: Date,
-     readonly currency: Currency = Currency.euro,
-     public imagesUrl?: any[],
-     public fsId?: string){
+        readonly code: string,
+        readonly name: string,
+        readonly type: ProductType,
+        readonly producerName: string,
+        readonly description: string,
+        readonly unitPrice: number,
+        readonly stock: number,
+        readonly stockLastIncrement: number,
+        readonly stockLastUpdateDate: Date,
+        readonly currency: Currency = Currency.euro,
+        public imagesUrl?: any[],
+        public fsId?: string){
     }
 }
 

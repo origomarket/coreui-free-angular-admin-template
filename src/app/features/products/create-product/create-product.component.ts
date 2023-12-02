@@ -26,6 +26,7 @@ import {combineLatest, filter, flatMap, forkJoin, map, mergeMap, of} from 'rxjs'
 import {Observable} from 'rxjs/internal/Observable';
 import {fromPromise} from "rxjs/internal/observable/innerFrom";
 import {getSHA256Hash} from "boring-webcrypto-sha256";
+import {ProductType} from "@core/model/product-type";
 
 
 @Component({
@@ -237,19 +238,7 @@ export class CreateProductComponent implements OnInit{
 
   private productFormDataToModel(pData: ProductInfo, imagesUrl: String[]): Product {
     
-    return new Product(
-      pData.basicInfo.code!,
-      pData.basicInfo.name!,
-      pData.basicInfo.category!,
-      this.user!.supplier,
-      pData.basicInfo.description!,
-      pData.stockAndPrice.unitPrice!,
-      pData.stockAndPrice.stock!,
-      pData.stockAndPrice.stock!,
-      new Date(),
-      this.productConfig.currency,
-      imagesUrl
-    )
+    return new Product(pData.basicInfo.code!, pData.basicInfo.name!, pData.basicInfo.category!, this.user!.supplier, pData.basicInfo.description!, pData.stockAndPrice.unitPrice!, pData.stockAndPrice.stock!, pData.stockAndPrice.stock!, new Date(), this.productConfig.currency, imagesUrl)
   }
 
   /*uploadFile(file: File): Observable<string> {
@@ -286,7 +275,7 @@ export class BasicProductInfo {
 
   @required({messageKey: 'required'})
   @prop()
-  category?: string;
+  category?: ProductType;
   
   @prop()
   @required({messageKey: 'required'})

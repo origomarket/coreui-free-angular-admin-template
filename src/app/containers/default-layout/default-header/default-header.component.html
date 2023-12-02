@@ -12,7 +12,9 @@
         size="lg"
       ></svg>
     </button>
-    <c-header-nav class="d-none d-lg-flex me-auto">
+
+<!-- Disabilitate i 2 gruppi centrali dell header (riabilitare quando e se le funzionalita saranno implementate) -->
+<!--    <c-header-nav class="d-none d-lg-flex me-auto">
       <c-nav-item>
         <a cNavLink routerLink="/dashboard" routerLinkActive="active">
           Dashboard
@@ -26,9 +28,9 @@
           Settings
         </a>
       </c-nav-item>
-    </c-header-nav>
+    </c-header-nav> -->
 
-    <c-header-nav class="d-none d-lg-flex">
+  <!--  <c-header-nav class="d-none d-lg-flex">
       <c-nav-item>
         <a routerLink="./" cNavLink>
           <svg cIcon name="cilBell" size="lg"></svg>
@@ -44,7 +46,8 @@
           <svg cIcon name="cilEnvelopeOpen" size="lg"></svg>
         </a>
       </c-nav-item>
-    </c-header-nav>
+    </c-header-nav> --->
+
     <c-header-nav class="ms-3">
       <ng-container *ngTemplateOutlet="userDropdown"></ng-container>
     </c-header-nav>
@@ -85,7 +88,7 @@
       <li>
         <h6 cDropdownHeader class="bg-light fw-semibold py-2">Account</h6>
       </li>
-      <li>
+<!--      <li>
         <a routerLink="./" cDropdownItem>
           <svg cIcon class="me-2" name="cilBell"></svg>
           Updates
@@ -120,7 +123,7 @@
             42
           </c-badge>
         </a>
-      </li>
+      </li> -->
       <li>
         <a routerLink="/products" cDropdownItem>
           <svg cIcon class="me-2" name='cibProductHunt'></svg>
@@ -143,7 +146,7 @@
           Profile
         </a>
       </li>
-      <li>
+<!--      <li>
         <a routerLink="./" cDropdownItem>
           <svg cIcon class="me-2" name="cilSettings"></svg>
           Settings
@@ -175,7 +178,7 @@
           <svg cIcon class="me-2" name="cilLockLocked"></svg>
           Lock Account
         </a>
-      </li>
+      </li> -->
       <li></li>
     </ul>
   </c-dropdown>

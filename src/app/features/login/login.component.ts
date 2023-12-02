@@ -32,7 +32,7 @@ export class LoginComponent implements OnInit {
   async onSubmitCredentials() {
     let error = await this.authService.signIn(this.loginForm.controls['email'].value, this.loginForm.controls['password'].value)
     this.loginForm.reset();
-    !!error ? window.alert(`Login failed with ${error} check your credentials and retry`) : this.router.navigateByUrl('/home')
+    !!error ? window.alert(`Login failed with ${error} check your credentials and retry`) : this.router.navigateByUrl('')
 
   }
 
