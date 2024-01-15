@@ -1,21 +1,8 @@
-import {Component, OnInit} from '@angular/core';
-import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Product} from '@core/model/product';
 import {AuthService} from '@core/services/auth.service';
 import {ProductsService} from '@core/services/products.service';
-import {ResizeImagesService} from '@core/services/resize-images.service';
-import {
-  BehaviorSubject,
-  combineLatest,
-  combineLatestAll,
-  forkJoin,
-  map,
-  mergeMap,
-  Observable,
-  of,
-  ReplaySubject
-} from 'rxjs';
-import {fromPromise} from "rxjs/internal/observable/innerFrom";
+import {combineLatest, map, Observable, Subscription} from 'rxjs';
 import {Router} from "@angular/router";
 import {ProductImagesHelperService} from "@features/products/services/product-images-helper.service";
 
@@ -24,14 +11,19 @@ import {ProductImagesHelperService} from "@features/products/services/product-im
   templateUrl: './products-overview.component.html',
   styleUrls: ['./products-overview.component.scss']
 })
-export class ProductsOverviewComponent implements OnInit {
+export class ProductsOverviewComponent implements OnInit, OnDestroy {
 
   products?: Observable<Product[]>
+  subscriptions: Subscription[] = [];
 
   constructor(readonly productsService: ProductsService,
      readonly authSvc: AuthService,
       private readonly resizeImageService: ProductImagesHelperService,
       private readonly router: Router) { }
+
+  ngOnDestroy(): void {
+        this.subscriptions.forEach(s => s.unsubscribe());
+  }
 
   ngOnInit(): void {
     this.products = this.productsService.fetchProducts(this.authSvc.authenticatedUser?.supplierId!)
@@ -41,52 +33,7 @@ export class ProductsOverviewComponent implements OnInit {
   }
 
 
-  deepCopy(obj: any, seen?: Map<Object, Object>): any {
-    var copy: any;
 
-    // Handle the 3 simple types, and null or undefined
-    if (null == obj || 'object' != typeof obj) return obj;
-
-    // Handle Date
-    if (obj instanceof Date) {
-      copy = new Date();
-      copy.setTime(obj.getTime());
-      return copy;
-    }
-
-    // Handle cycles
-    if (!seen) {
-      seen = new Map();
-    } else {
-      const clonedObj = seen.get(obj);
-      if (clonedObj) {
-        return clonedObj;
-      }
-    }
-
-    // Handle Array
-    if (obj instanceof Array) {
-      copy = [];
-      seen.set(obj, copy);
-      for (var i = 0, len = obj.length; i < len; i++) {
-        copy[i] = this.deepCopy(obj[i], seen);
-      }
-      return copy;
-    }
-
-    // Handle Object
-    if (obj instanceof Object) {
-      copy = {};
-      seen.set(obj, copy);
-      for (var attr in obj) {
-        if (obj.hasOwnProperty(attr)) copy[attr] = this.deepCopy(obj[attr], seen);
-      }
-      Object.setPrototypeOf(copy, Object.getPrototypeOf(obj)); // keep prototype chain (classes)
-      return copy;
-    }
-
-    throw new Error("Unable to copy obj! Its type isn't supported.");
-  }
 
 
   clone(product: Product) {
@@ -96,10 +43,7 @@ export class ProductsOverviewComponent implements OnInit {
 
   seeDetails(product: Product) {
     let productClone = this.clone(product);
-    /*this.imagesClones.get(product.code)?.forEach(obs => obs.subscribe(val => {
-      console.log('val is ' + JSON.stringify(val))
-    }))*/
-    combineLatest(/*this.imagesClones.get(product.code)*/ product.imagesUrl as Observable<any>[]).subscribe(
+    const subscr = combineLatest(/*this.imagesClones.get(product.code)*/ product.imagesUrl as Observable<any>[]).subscribe(
         (results: any[]) => {
           // 'results' will contain the last emitted value from each Observable in the array
           console.log('All observables have completed:', results);
@@ -116,7 +60,6 @@ export class ProductsOverviewComponent implements OnInit {
           console.error('One or more observables encountered an error:', error);
         }
     );
-
-
+    this.subscriptions.push(subscr);
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subject, Subscription } from 'rxjs';
+import {debounceTime, Observable, Subject, Subscription} from 'rxjs';
 
 /**
  * This service offers a way to push results of changed done by the user (i.e. changing the photo profile or adding a new product)
@@ -29,7 +29,7 @@ export class UserActionNotificationService {
    * @returns the subscription
    */
   subscribe(next: (value: ActionResult) => any): Subscription {
-    return this.actionResults.subscribe(next);
+    return this.actionResults.pipe(debounceTime(1500)).subscribe(next);
   }
 
   /**

@@ -3,6 +3,8 @@ import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { AuthService } from '@core/services/auth.service';
 import { ToasterComponent } from '@coreui/angular';
 import { OrigoSupplierUser } from 'src/app/core/model/OrigoSupplierUser';
+import {StorageService} from "@core/services/storage.service";
+import {Observable, of} from "rxjs";
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
@@ -12,6 +14,7 @@ export class ProfileComponent implements OnInit/*, AfterViewInit*/{
 
   user: OrigoSupplierUser | undefined = undefined;
   activeTab = 'my-messages'
+  profilePhoto : string | undefined = undefined;
 
    // Backend notifications via toaster
   @ViewChild(ToasterComponent) toaster!: ToasterComponent
@@ -19,7 +22,8 @@ export class ProfileComponent implements OnInit/*, AfterViewInit*/{
   constructor(
      private router: Router,
      private activatedRoute: ActivatedRoute,
-     private authService: AuthService) { 
+     private authService: AuthService,
+     private storageSvc: StorageService) {
     this.authService.userDomainSubscribe(user =>  {
       this.user = user;
     })
@@ -34,6 +38,7 @@ export class ProfileComponent implements OnInit/*, AfterViewInit*/{
         this.activeTab = event.url.substring(event.url.lastIndexOf('/')+1);
       }
     })
+    this.userPhotoUrl().subscribe(url => this.profilePhoto = url)
   }
 
   getDisplayName() {
@@ -46,8 +51,8 @@ export class ProfileComponent implements OnInit/*, AfterViewInit*/{
     return supplier;
   }
 
-  get userPhotoUrl() {
-    return !!this.user ? this.user.photoURL ?? '' : ''
+   userPhotoUrl(): Observable<string> {
+    return !!this.user ? this.storageSvc.getDownloadUrlFromPath(`users/${this.user?.uid}/images/profile`) : of('');
   }
 
   get email() {
