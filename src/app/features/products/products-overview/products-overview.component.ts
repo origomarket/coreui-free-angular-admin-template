@@ -2,7 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Product} from '@core/model/product';
 import {AuthService} from '@core/services/auth.service';
 import {ProductsService} from '@core/services/products.service';
-import {combineLatest, map, Observable, Subscription} from 'rxjs';
+import {catchError, combineLatest, map, Observable, of, onErrorResumeNext, Subscription} from 'rxjs';
 import {Router} from "@angular/router";
 import {ProductImagesHelperService} from "@features/products/services/product-images-helper.service";
 
@@ -43,21 +43,29 @@ export class ProductsOverviewComponent implements OnInit, OnDestroy {
 
   seeDetails(product: Product) {
     let productClone = this.clone(product);
-    const subscr = combineLatest(/*this.imagesClones.get(product.code)*/ product.imagesUrl as Observable<any>[]).subscribe(
+    let resolvedImageUrls;
+    if( product.imagesUrl && product.imagesUrl?.length > 0) {
+        resolvedImageUrls = combineLatest(product.imagesUrl as Observable<any>[]);
+    }else{
+        resolvedImageUrls = of([]);
+    }
+    const subscr = resolvedImageUrls.pipe(catchError((err) => of([]) ) ).subscribe(
         (results: any[]) => {
           // 'results' will contain the last emitted value from each Observable in the array
           console.log('All observables have completed:', results);
           // You can perform actions with the resolved values here
           productClone.imagesUrl = results;
-          this.router.navigateByUrl(`/products/detail/${product.code}`, {
-            state: {
-              'product': productClone
-            }
-          })
         },
         (error) => {
           // Handle errors if any of the Observables fail
           console.error('One or more observables encountered an error:', error);
+        },
+        () => {
+            this.router.navigateByUrl(`/products/detail/${product.code}`, {
+                state: {
+                    'product': productClone
+                }
+            })
         }
     );
     this.subscriptions.push(subscr);
