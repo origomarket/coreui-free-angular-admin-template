@@ -6,7 +6,7 @@
                     {{ product.name | titlecase }}
                 </c-card-header>
                 <c-card-body>
-                    <c-carousel>
+                    <c-carousel *ngIf="product && product.imagesUrl && product.imagesUrl.length > 0">
                         <c-carousel-indicators></c-carousel-indicators>
                         <c-carousel-inner>
                             <c-carousel-item *ngFor="let slide of product.imagesUrl">

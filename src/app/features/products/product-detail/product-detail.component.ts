@@ -59,8 +59,8 @@ export class ProductDetailComponent implements OnInit {
         this.updateStock();
       })
     })
-
   }
+
 
   get priceControl() : FormControl {
     return this.productForm?.get('unitPrice') as FormControl;
