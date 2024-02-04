@@ -10,8 +10,9 @@
 import {
     onDocumentCreated,
 } from "firebase-functions/v2/firestore";
+import {createProduct, listProducts} from "./odoo/products-api";
 
-exports.createuser = onDocumentCreated("/suppliers/{emp_id}/products/{prod_id}",
+exports.createProduct = onDocumentCreated("/suppliers/{emp_id}/products/{prod_id}",
     (event) => {
     // Get an object representing the document
     // e.g. {'name': 'Marie', 'age': 66}
@@ -21,7 +22,7 @@ exports.createuser = onDocumentCreated("/suppliers/{emp_id}/products/{prod_id}",
         return;
     }
     const data = snapshot.data();
-    console.log("Created " + JSON.stringify(data));
-
-    // perform more operations ...
+    console.log("Created in firebase " + JSON.stringify(data));
+    listProducts();
+    createProduct(data);
 });
