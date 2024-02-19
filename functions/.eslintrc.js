@@ -29,5 +29,11 @@ module.exports = {
     "import/no-unresolved": 0,
     "indent": ["warn", 2],
     "max-len": ["warn", 80],
+    "valid-jsdoc": 0,
+    "array-bracket-spacing": "warn",
+    "block-spacing": "warn",
+    "semi": "warn",
+    "no-empty": "warn",
+    "arrow-parens": "warn",
   },
 };

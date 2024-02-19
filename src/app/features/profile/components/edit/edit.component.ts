@@ -228,6 +228,8 @@ class ProfileEditFormModel {
   public profilePhoto = ''
   @required({messageKey: 'supplier-missing'})
   supplier?: {name: string, id: string};
+  @required({messageKey: 'invitation-missing'})
+  invitationCode?: string;
 }
 
 export class SupplierView {

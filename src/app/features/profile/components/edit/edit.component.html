@@ -46,6 +46,15 @@
             </span>
         </c-input-group>
         <c-input-group class="mb-3">
+                  <span cInputGroupText>
+                    <svg cIcon name="cilLockLocked"></svg>
+                  </span>
+            <input formControlName="invitationCode" autoComplete="invitation-code" cFormControl placeholder="invitation-code"/>
+            <span>
+                   <small class="form-text text-danger" *ngIf="getControlErrors('invitationCode')">{{getCntrolErroMessage('invitationCode')}}</small>
+            </span>
+        </c-input-group>
+        <c-input-group class="mb-3">
             <div id="recaptcha" #recaptcha>
             </div>
             <input formControlName="otp" (blur)="updatePhoneNumber()" *ngIf="verificationPhoneId !== ''" cFormControl
@@ -83,6 +92,7 @@
          <small class="form-text text-danger" *ngIf="getControlErrors('confirmpassword')">{{getCntrolErroMessage('confirmpassword')}}</small>
        </span>
       </c-input-group>-->
+
         <div class="d-grid">
             <button type="submit" [disabled]="formGroup.invalid" cButton color="success">Submit changes</button>
         </div>

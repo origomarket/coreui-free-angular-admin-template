@@ -21,7 +21,7 @@ export class AuthService {
 
   public get authenticatedUser(): OrigoSupplierUser | null {
     if(this._authenticatedUser === null){
-      let serializedUser = localStorage.getItem('origoUser');
+      let serializedUser = sessionStorage.getItem('origoUser');
       if(serializedUser != null){
         this._authenticatedUser = JSON.parse(serializedUser) as OrigoSupplierUser;
       }
@@ -37,7 +37,7 @@ export class AuthService {
 
   saveUserLocally(){
      // store data into local storage before browser refresh
-    localStorage.setItem('origoUser', JSON.stringify(this._authenticatedUser));
+    sessionStorage.setItem('origoUser', JSON.stringify(this._authenticatedUser));
   }
   
   constructor(
@@ -117,7 +117,6 @@ export class AuthService {
     let document = await this.afs.doc(`users/${userCreds.user?.uid}`).get().toPromise()
     if (document?.data()) {
       this.authenticatedUser = document.data() as OrigoSupplierUser;
-      //localStorage.setItem('user', JSON.stringify(this.authenticatedUser));
       return undefined;
     } else {
       return 'failed to sync origo domain userdata'
@@ -129,7 +128,7 @@ export class AuthService {
   async signUp(user: Partial<OrigoSupplierUser>, password: string) {
     try {
       
-      if(!user.email || !password || !user.name || !user.surname || !user.supplier) {
+      if(!user.email || !password || !user.name || !user.surname || !user.supplier || !user.invitationCode) {
         throw Error('One or more field required for registration are missing!');
       }
 
@@ -180,7 +179,6 @@ export class AuthService {
   }
 
   async updatePhoneNUmber(phoneNumber: string, otp: string, verificationId: string): Promise<void> {
-
     if (!this.auth.currentUser || !this.authenticatedUser) {
       throw Error('current authenticated user is null. Can not update phone number');
     }
@@ -235,6 +233,12 @@ export class AuthService {
 
   }
 
+  async isUserEnrolled(): Promise<boolean> {
+    const token = await this.auth.currentUser?.getIdTokenResult(true);
+    const status = token?.claims['status'];
+    return 'enrolled' === status;
+  }
+
   // Sign out
   signOut(): Promise<void> {
     console.log(`logged in user is ${this.auth}`);
@@ -253,6 +257,7 @@ export class AuthService {
 
 }
 
+export type UserStatus = 'registered' | 'enrolled';
 
 
 

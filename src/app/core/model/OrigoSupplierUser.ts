@@ -8,5 +8,6 @@ export class OrigoSupplierUser {
         public supplierId:string,
         public displayName?: string,
         public phoneNumber?: string,
-        public photoURL?: string) {}
+        public photoURL?: string,
+        public invitationCode?: string) {}
 }

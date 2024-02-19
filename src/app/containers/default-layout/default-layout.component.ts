@@ -34,7 +34,8 @@ export class DefaultLayoutComponent implements AfterViewInit {
       delay: 5000,
       placement: ToasterPlacement.TopEnd,
       color: this.colorActionStateMap.get(result.result),
-      autohide: true,
+      autohide: result.dismissible ?? true,
+      hide: result.dismissible ?? true,
       message: result.message
     }
 

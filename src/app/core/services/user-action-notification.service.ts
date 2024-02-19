@@ -48,5 +48,5 @@ export enum Result {
 } 
 
 export class ActionResult {
-  constructor(readonly result: Result, readonly message: string, readonly title?: string) {}
+  constructor(readonly result: Result, readonly message: string, readonly title?: string, readonly dismissible?: boolean) {}
 }

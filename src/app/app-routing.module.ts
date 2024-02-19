@@ -1,21 +1,28 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import {NgModule} from '@angular/core';
+import {RouterModule, Routes} from '@angular/router';
 
-import { DefaultLayoutComponent } from './containers';
-import { Page404Component } from './views/pages/page404/page404.component';
-import { Page500Component } from './views/pages/page500/page500.component';
-import { LoginComponent } from '@features/login/login.component';
-import { LogoutComponent } from '@features/logout/logout.component';
-import { RegisterComponent } from '@features/register/register.component';
-import { canActivate, loggedIn, redirectUnauthorizedTo } from '@angular/fire/compat/auth-guard';
-import { ProfileComponent } from '@features/profile/profile.component';
+import {DefaultLayoutComponent} from './containers';
+import {Page404Component} from './views/pages/page404/page404.component';
+import {Page500Component} from './views/pages/page500/page500.component';
+import {LoginComponent} from '@features/login/login.component';
+import {LogoutComponent} from '@features/logout/logout.component';
+import {RegisterComponent} from '@features/register/register.component';
+import {AngularFireAuthGuard, AuthPipeGenerator, canActivate, customClaims, hasCustomClaim, redirectUnauthorizedTo} from '@angular/fire/compat/auth-guard';
+import {ProfileComponent} from '@features/profile/profile.component';
+import {filter, map, pipe} from "rxjs";
+
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['/login']);
+const enrolledOnly = () => pipe(customClaims, map(claims => claims.status === 'enrolled'));
+const enrolledOnly2 = () => pipe(customClaims,  filter(claims => claims.status !== 'enrolled'), redirectUnauthorizedTo(['/login']));
+
+
+
 
 const routes: Routes = [
   {
     path: '',
     //redirectTo: 'dashboard',
-    redirectTo: 'products/overview',
+    redirectTo: 'profile',
     pathMatch: 'full',
   },
   {
@@ -34,7 +41,8 @@ const routes: Routes = [
       },
       { 
         path: 'products',
-        ...canActivate(redirectUnauthorizedToLogin),
+        canActivate: [AngularFireAuthGuard],
+        data: { authGuardPipe: enrolledOnly },
         loadChildren: () => import('./features/products/products.module').then(m => m.ProductsModule)
       },
       {

@@ -5,6 +5,7 @@ import { ToasterComponent } from '@coreui/angular';
 import { OrigoSupplierUser } from 'src/app/core/model/OrigoSupplierUser';
 import {StorageService} from "@core/services/storage.service";
 import {Observable, of} from "rxjs";
+import {Result, UserActionNotificationService} from "@core/services/user-action-notification.service";
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
@@ -23,7 +24,8 @@ export class ProfileComponent implements OnInit/*, AfterViewInit*/{
      private router: Router,
      private activatedRoute: ActivatedRoute,
      private authService: AuthService,
-     private storageSvc: StorageService) {
+     private storageSvc: StorageService,
+     private notificationSvc: UserActionNotificationService) {
     this.authService.userDomainSubscribe(user =>  {
       this.user = user;
     })
@@ -39,6 +41,13 @@ export class ProfileComponent implements OnInit/*, AfterViewInit*/{
       }
     })
     this.userPhotoUrl().subscribe(url => this.profilePhoto = url)
+    this.authService.isUserEnrolled().then(enrolled => {
+      if(!enrolled){
+        this.notificationSvc.pushNotification({ message: `Inserisci l'invitation-code ricevuto per iniziare ad usare l'app`, result: Result.ERROR, title: 'Gestione' +
+              ' Prodotto' , dismissible: false})
+      }
+    });
+
   }
 
   getDisplayName() {
