@@ -3,8 +3,9 @@ import { OrigoSupplierUser } from "../model/OrigoSupplierUser";
 import { Auth, User, createUserWithEmailAndPassword, PhoneAuthProvider, RecaptchaVerifier, signInWithEmailAndPassword, updatePhoneNumber } from '@angular/fire/auth';
 import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/compat/firestore';
 import { NavigationEnd, NavigationError, NavigationStart, Router, RouterEvent } from "@angular/router";
-import { Observable, Subject, Subscription, tap } from 'rxjs';
+import {firstValueFrom, Observable, Subject, Subscription, tap} from 'rxjs';
 import { sendEmailVerification, signOut, updateProfile, UserCredential } from 'firebase/auth';
+import {HttpClient} from "@angular/common/http";
 
 
 
@@ -44,6 +45,7 @@ export class AuthService {
     public afs: AngularFirestore,   // Inject Firestore service
     public auth: Auth,
     public router: Router,
+    private http: HttpClient,
     public ngZone: NgZone // NgZone service to remove outside scope warning
   ) {
 
@@ -238,6 +240,21 @@ export class AuthService {
     const status = token?.claims['status'];
     return 'enrolled' === status;
   }
+
+  async submitInvitationCode(code: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.http.post<any>(
+          'https://us-central1-origo-supplier.cloudfunctions.net/validateUser',
+          { invitation_code: code },
+          {headers: {"Authorization": "Bearer " + await this.auth.currentUser?.getIdToken()}}
+          ));
+      return true;
+    }catch(e) {
+      console.log(` ERROR: failed to validate invitation code ${code}. Reason : ${JSON.stringify(e)}`);
+      return false;
+    }
+  }
+
 
   // Sign out
   signOut(): Promise<void> {

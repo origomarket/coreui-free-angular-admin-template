@@ -5,29 +5,25 @@
                 <svg cIcon name="cilUser"></svg>
             </span>
             <input formControlName="displayName" autoComplete="nick name" cFormControl placeholder="nick name" />
-            <span>
-                <small class="form-text text-danger"
-                    *ngIf="getControlErrors('displayName') !== null">{{getCntrolErroMessage('displayName')}}</small>
-            </span>
+            <c-form-feedback *ngIf="displayNameControl?.invalid"
+                             class="custom-invalid-feedback"
+                             [valid]="false">{{firstErroMessage(displayNameControl)}}</c-form-feedback>
         </c-input-group>
         <c-input-group class="mb-3">
 
             <input type="file" class="file-input" (change)="onProfilePhotoSelected($event)" accept=".png,.jpg"
                 #fileUpload>
-
             <span cInputGroupText>
                 <svg cIcon name="cilImage"></svg>
             </span>
             <input formControlName="profilePhoto" cFormControl placeholder="select a photo profile" />
-
             <button (click)="fileUpload.click()" [active]="true" [color]="'primary'" [disabled]="formGroup.disabled"
                 cButton class="me-1">
                 <svg cIcon class="me-2" name="cilBrowser"></svg>
             </button>
-            <span>
-                <small class="form-text text-danger"
-                    *ngIf="getControlErrors('profilePhoto') !== null">{{getCntrolErroMessage('profilePhoto')}}</small>
-            </span>
+            <c-form-feedback *ngIf="profilePhotoControl?.invalid"
+                             class="custom-invalid-feedback"
+                             [valid]="false">{{firstErroMessage(profilePhotoControl)}}</c-form-feedback>
             <div>
                 <c-progress class="mb-3" *ngIf="showProgressImageProfile">
                     <c-progress-bar [value]="(uploadProgress | async)" variant="striped" color="info">{{(uploadProgress
@@ -40,29 +36,27 @@
                 <svg cIcon name="cilPhone"></svg>
             </span>
             <input type="text" formControlName="phone" placeholder="phone number" (blur)="startPhonNumberVerification()" cFormControl />
-            <span>
-                <small class="form-text text-danger"
-                    *ngIf="getControlErrors('phone') !== null">{{getCntrolErroMessage('phone')}}</small>
-            </span>
+            <c-form-feedback *ngIf="phoneControl?.invalid"
+                             class="custom-invalid-feedback"
+                             [valid]="false">{{firstErroMessage(phoneControl)}}</c-form-feedback>
         </c-input-group>
-        <c-input-group class="mb-3">
+        <c-input-group class="mb-3" *ngIf="!enrolled">
                   <span cInputGroupText>
                     <svg cIcon name="cilLockLocked"></svg>
                   </span>
             <input formControlName="invitationCode" autoComplete="invitation-code" cFormControl placeholder="invitation-code"/>
-            <span>
-                   <small class="form-text text-danger" *ngIf="getControlErrors('invitationCode')">{{getCntrolErroMessage('invitationCode')}}</small>
-            </span>
+            <c-form-feedback *ngIf="invitationCodeControl?.invalid"
+                             class="custom-invalid-feedback"
+                             [valid]="false">{{firstErroMessage(invitationCodeControl)}}</c-form-feedback>
         </c-input-group>
         <c-input-group class="mb-3">
             <div id="recaptcha" #recaptcha>
             </div>
             <input formControlName="otp" (blur)="updatePhoneNumber()" *ngIf="verificationPhoneId !== ''" cFormControl
                 placeholder="OTP code received via sms" #otp />
-            <span>
-                <small class="form-text text-danger"
-                    *ngIf="verificationPhoneId !== '' && getControlErrors('otp') !== null">{{getCntrolErroMessage('otp')}}</small>
-            </span>
+            <c-form-feedback *ngIf="otpControl?.invalid"
+                             class="custom-invalid-feedback"
+                             [valid]="false">{{firstErroMessage(otpControl)}}</c-form-feedback>
         </c-input-group>
         <div class="mb-3">
             <label cLabel for="supplier">Supplier</label>

@@ -7,61 +7,26 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import {
-    FirestoreEvent,
-    onDocumentCreated,
-} from "firebase-functions/v2/firestore";
+import {FirestoreEvent, onDocumentCreated} from "firebase-functions/v2/firestore";
 import {createProduct, listProducts} from "./odoo/products-api";
 
-import {
-    beforeUserCreated, beforeUserSignedIn, // HttpsError,
-} from "firebase-functions/v2/identity";
+import {beforeUserCreated} from "firebase-functions/v2/identity";
 import {generateInvitationCode, sendInvitationEmail} from "./admin/invitation-code-generation";
-import admin = require("firebase-admin");
 import {firestore} from "firebase-admin";
-import QueryDocumentSnapshot = firestore.QueryDocumentSnapshot;
 import {ParamsOf} from "firebase-functions/lib/common/params";
-// import {getAuth} from "firebase-admin/lib/auth";
+import admin = require("firebase-admin");
+import QueryDocumentSnapshot = firestore.QueryDocumentSnapshot;
+import functions = require("firebase-functions");
+import cors = require("cors");
 
 admin.initializeApp();
 
 /**
  * Disable the use until the invitation code is not verified
  */
-exports.validateInvitationCode = beforeUserCreated(async (event) => {
+exports.initializeCustomStatusClaim = beforeUserCreated(async (event) => {
     return {customClaims: {status: "registered"}};
 });
-
-/**
- * Function to validate the invitation code at registration time.
- * If the code is valid for the email the records from "invitations" are deleted and the registration proceed
- * otherwise an error is thrown
- */
-exports.validateInvitationCode = beforeUserSignedIn(async (event) => {
-
-    /*     const email = event.data.email;
-        const uid = event.auth ? event.auth.uid : undefined;
-        if ( !uid ) {
-            throw new HttpsError("permission-denied", "Uid undefined at login time!");
-        }
-        const domainUser = await admin.firestore().collection("users").doc(uid).get();
-        const code = domainUser.data()!.invitationCode;
-        const snapshot = await admin.firestore().collection("invitations")
-            .where("email", "==", email)
-            .where("invitationCode", "==", code)
-            .get();
-        if (snapshot.empty) {
-            console.log(`Attempt to register email ${email} with invalid code ${code}`);
-            throw new HttpsError("permission-denied", "You tried to register with a code or an invalid email!");
-        } else {
-            // Delete all the matching documents
-            snapshot.docs.forEach( doc => {
-                admin.firestore().collection("invitations").doc(doc.id).delete();
-            });
-        }
-        // Re-enable the user after code verification
-        return {disabled: false};*/
-    });
 
 
 exports.createProduct = onDocumentCreated("/suppliers/{emp_id}/products/{prod_id}",
@@ -86,12 +51,66 @@ exports.sendInvitation = onDocumentCreated("/invitations/{invitation_id}",
                 ...invitationData,
                 invitationCode: code,
                 created_at: admin.firestore.FieldValue.serverTimestamp(),
+                status: "pending",
             };
             await admin.firestore().collection("invitations").doc(invitationId).update(invitationDataUpdate);
         } catch (e) {
             console.log(`Failed to send email to  ${invitationData.email} or to update the invitation with error ${JSON.stringify(e)}. Please delete the add it again in order to retry`);
         }
     });
+
+exports.validateUser = functions.https.onRequest(async (req, res) => {
+    // Allow all origin. Pls set the array of allowed origins once done with dev
+    cors({origin: true})(req, res, async () => {
+        // Allow CORS
+        // res.set("Access-Control-Allow-Origin", "*");
+        if (req.method === "POST" && req.headers["content-type"]?.toLowerCase() === "application/json") {
+            const valid = await validateInvitationCode(req);
+            res.status( valid ? 200 : 403).send({message: valid ? "enrollment ok" : "enrollment failed" });
+        } else {
+            res.status(400).send("Invalid method or content-type");
+        }
+    });
+});
+
+/**
+ * Validates the invitation code sent be the yser. If the code associated to the email  is valid, the status of the user is set to enrolled both in
+ * invitations collection and in authentication
+ * @param req the http request - must be a post with the invitationCode
+ */
+async function validateInvitationCode(req: functions.https.Request): Promise<boolean> {
+    const body = req.body;
+    // Verify Firebase ID token
+    const idToken = req.headers.authorization?.split("Bearer ")[1];
+    if (!idToken) {
+        return false;
+    }
+    const decodedToken = await admin.auth().verifyIdToken(idToken);
+    const email = decodedToken.email;
+    const snapshot = await admin.firestore().collection("invitations")
+        .where("email", "==", email)
+        .where("invitationCode", "==", body.invitation_code)
+        .get();
+    if (snapshot.empty) {
+        console.log(`ERROR - Attempt to register email ${email} with invalid code ${body.invitation_code}`);
+        return false;
+    } else {
+        // Update the status to enrolled in the related invitation collection
+        for (let i = 0; i < snapshot.docs.length; i++) {
+            try {
+                await admin.firestore().collection("invitations")
+                    .doc(snapshot.docs[i].id)
+                    .update("status", "enrolled");
+                await admin.auth().setCustomUserClaims(decodedToken.uid, {status: "enrolled"});
+            } catch (e) {
+                console.log(`ERROR - Attempt to register email ${email} with valid code ${body.invitation_code} failed because there was the following error updating the user status: ${JSON.stringify(e)}`);
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
 
 /**
  *

@@ -1,17 +1,17 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { getDownloadURL } from '@angular/fire/storage';
-import { FormGroup, ValidationErrors } from '@angular/forms';
-import { UserActionNotificationService, Result } from '@core/services/user-action-notification.service';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {AngularFirestore} from '@angular/fire/compat/firestore';
+import {getDownloadURL} from '@angular/fire/storage';
+import {FormControl, FormGroup, ValidationErrors} from '@angular/forms';
+import {Result, UserActionNotificationService} from '@core/services/user-action-notification.service';
 
-import { alphaNumeric, image, mask, prop, ReactiveFormConfig, required, RxFormBuilder } from '@rxweb/reactive-form-validators';
-import { flatMap, map, mergeMap, of } from 'rxjs';
-import { Observable } from 'rxjs/internal/Observable';
-import { combineLatest, tap } from 'rxjs';
-import { OrigoSupplierUser } from 'src/app/core/model/OrigoSupplierUser';
-import { AuthService } from 'src/app/core/services/auth.service';
-import { StorageService } from 'src/app/core/services/storage.service';
-import { Supplier } from '@core/model/supplier';
+import {alphaNumeric, image, mask, ReactiveFormConfig, required, RxFormBuilder} from '@rxweb/reactive-form-validators';
+import {combineLatest, map, of, tap} from 'rxjs';
+import {Observable} from 'rxjs/internal/Observable';
+import {OrigoSupplierUser} from 'src/app/core/model/OrigoSupplierUser';
+import {AuthService} from 'src/app/core/services/auth.service';
+import {StorageService} from 'src/app/core/services/storage.service';
+import {Supplier} from '@core/model/supplier';
+import {firstErrorMessage} from "@shared/utils/reactive-forms-utils";
 
 
 @Component({
@@ -32,6 +32,7 @@ export class EditComponent implements OnInit {
   suppliers$: Observable<SupplierView[]> = of();
   //supplier: SupplierView | undefined;
   suppliers: SupplierView[] = [];
+  enrolled: boolean = false;
 
   constructor(
     private formBuilder: RxFormBuilder,
@@ -87,18 +88,21 @@ export class EditComponent implements OnInit {
         "otp-invalid": "otp code invalid",
         "displayName-required": "display name cannot be empty",
         "photo-invalid": "photo should be smaller tha 100x100 px",
-        "supplier-missing": "devi selezionare un supplier per poter iniziare a lavorare"
+        "supplier-missing": "devi selezionare un supplier per poter iniziare a lavorare",
+        "notYetEnrolled": "please enter the invitation code to start using the app"
       }
     })
   }
 
   initForm() {
+    this.updateStausOnInvitationCode();
     this.authService.userDomainSubscribe(user => {
       if (!!user) {
         this.user = user;
-        this.formGroup.controls['displayName'].setValue(user.displayName);
-        this.formGroup.controls['phone'].setValue(user.phoneNumber);
-        
+        this.displayNameControl.setValue(user.displayName);
+        this.phoneControl.setValue(user.phoneNumber);
+        this.invitationCodeControl.setErrors({notYetEnrolled: true});
+        this.invitationCodeControl.markAsTouched();
         let supplierView$: Observable<SupplierView | undefined>;
         if(!!user.supplier && !!user.supplierId) {
           // If a supplier is already associated with the user verify it and in case create the preselected entry
@@ -106,46 +110,73 @@ export class EditComponent implements OnInit {
           .pipe(
             map((sup: Supplier & { id: string; } | undefined) => {            
               return (!!sup?.name && !!sup.id) ? new SupplierView(sup?.name, sup.id) : undefined;
-            })            
+            })
           )  
         }else{
           // No supplier associated yet. Empty entry by default
           supplierView$ = of(undefined);
         }
         supplierView$.pipe(tap( (sup: SupplierView | undefined) => {
-          
           this.retrieveSuppliersAndManageDefault(sup)
         })).subscribe();
       }
-
     })
+  }
+
+  private updateStausOnInvitationCode() {
+    this.authService.isUserEnrolled().then(enrolled => {
+      if(enrolled){
+        this.enrolled = true;
+        this.invitationCodeControl.setErrors(null);
+      }
+    });
   }
 
   async onSubmitCredentials() {
     this.formGroup.disable();
     //const modelValue = this.formGroup.value as ProfileEditFormModel;
     let userUpdate: Partial<OrigoSupplierUser> = {}
-    if (!!this.formGroup.controls['profilePhoto'].value && !!this.profileImageUrl) {
+    if (!!this.profilePhotoControl.value && !!this.profileImageUrl) {
       userUpdate.photoURL = await this.profileImageUrl;
     }
-    if (this.formGroup.controls['displayName'].dirty) {
-      userUpdate.displayName = this.formGroup.controls['displayName'].value;
+    if (this.displayNameControl.dirty) {
+      userUpdate.displayName = this.displayNameControl.value;
     }
-    userUpdate.supplier = (this.formGroup.controls['supplier'].value as {name: string}).name; //modelValue.supplier?.name;
-    userUpdate.supplierId = (this.formGroup.controls['supplier'].value as {id: string}).id; //modelValue.supplier?.id;
+    userUpdate.supplier = (this.supplierControl.value as {name: string}).name; //modelValue.supplier?.name;
+    userUpdate.supplierId = (this.supplierControl.value as {id: string}).id; //modelValue.supplier?.id;
     let result = await this.authService.updateDomainUser2(userUpdate);
     this.updateSuccess = result[0];
-    this.updateSuccess ? this.profileNotificationService.pushNotification({ message: `Profile updated with success!`, result: Result.SUCCESS }) : this.profileNotificationService.pushNotification({ message: `Profile update failed!`, result: Result.ERROR })
+    this.updateSuccess ? this.profileNotificationService.pushNotification({ message: `Profile updated with success!`, result: Result.SUCCESS }) : this.profileNotificationService.pushNotification({ message: `Profile update failed!`, result: Result.ERROR });
+
     this.formGroup.enable();
+
+    // Validate invitation code to enroll the user
+    await this.submitInvitationCode();
+  }
+
+  async submitInvitationCode() {
+    if(this.invitationCodeControl.valid) {
+      this.formGroup.disable();
+      let result = await this.authService.submitInvitationCode(this.invitationCodeControl.value);
+      let notificationContent: {message: string, result: Result};
+      if(result){
+        notificationContent = { message: `Congratulations: Profile enrolled with success!`, result : Result.SUCCESS };
+        this.enrolled = true;
+      }else{
+        notificationContent = { message: `Profile enrollment failed!`, result : Result.ERROR };
+      }
+      this.profileNotificationService.pushNotification(notificationContent);
+      this.formGroup.enable();
+    }
   }
 
   startPhonNumberVerification() {
-    let phoneChanged = !!this.user && this.formGroup.controls['phone'].value !== this.user.phoneNumber
+    let phoneChanged = !!this.user && this.phoneControl.value !== this.user.phoneNumber
     console.log('phonechanged = ' + phoneChanged)
     if (/*this.formGroup.controls['phone'].dirty*/ phoneChanged) {
-      this.formGroup.controls['otp'].enable({ onlySelf: true, emitEvent: false });
+      this.otpControl.enable({ onlySelf: true, emitEvent: false });
 
-      let phone = `+${this.formGroup.controls['phone'].value}`;
+      let phone = `+${this.phoneControl.value}`;
       this.authService.verifyPhoneWithRecaptcha('recaptcha', phone).then(
         (vId) => {
           console.log("verification id is " + vId);
@@ -161,8 +192,8 @@ export class EditComponent implements OnInit {
   }
 
   async updatePhoneNumber() {
-    let otpValue = this.formGroup.controls['otp'].value;
-    let phoneControl = this.formGroup.controls['phone'];
+    let otpValue = this.otpControl.value;
+    let phoneControl = this.phoneControl;
     if (otpValue.length === 6 && phoneControl.valid) {
       try {
         this.authService.updatePhoneNUmber(phoneControl.value, otpValue, this.verificationPhoneId)
@@ -203,7 +234,7 @@ export class EditComponent implements OnInit {
         }
       })).subscribe();
 
-      this.formGroup.controls['profilePhoto'].setValue(file.name);
+      this.profilePhotoControl.setValue(file.name);
 
       /*const formData = new FormData();
 
@@ -215,6 +246,31 @@ export class EditComponent implements OnInit {
     }
   }
 
+  get invitationCodeControl() : FormControl {
+    return this.formGroup?.get('invitationCode') as FormControl;
+  }
+
+  get displayNameControl() : FormControl {
+    return this.formGroup?.get('displayName') as FormControl;
+  }
+
+  get profilePhotoControl() : FormControl {
+    return this.formGroup?.get('profilePhoto') as FormControl;
+  }
+
+  get phoneControl() : FormControl {
+    return this.formGroup?.get('phone') as FormControl;
+  }
+
+  get otpControl() : FormControl {
+    return this.formGroup?.get('otp') as FormControl;
+  }
+
+  get supplierControl(): FormControl {
+    return this.formGroup?.get('supplier') as FormControl;
+  }
+
+  public readonly firstErroMessage = firstErrorMessage;
 }
 
 class ProfileEditFormModel {
@@ -228,7 +284,7 @@ class ProfileEditFormModel {
   public profilePhoto = ''
   @required({messageKey: 'supplier-missing'})
   supplier?: {name: string, id: string};
-  @required({messageKey: 'invitation-missing'})
+  @required({messageKey: 'notYetEnrolled'})
   invitationCode?: string;
 }
 
