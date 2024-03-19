@@ -3,7 +3,7 @@
 
 import nodemailer = require("nodemailer");
 
-const skipEmailSend = true;
+const skipEmailSend = false;
 // Function to generate a random alphanumeric code
 export const generateInvitationCode = (length: number) => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -19,12 +19,25 @@ export const sendInvitationEmail = async (email: string, code: string) => {
     if (skipEmailSend) {
         return Promise.resolve();
     }
+    if (!email || email === "" || email === null) {
+        console.error("Error sending invitation email: the email can't be empty");
+    }
+    console.log("Sending email to recipient " + email);
     const transporter = nodemailer.createTransport({
-        // Configure your email service here (e.g., Gmail, SendGrid)
+        host: "smtp.mailersend.net",
+        port: 587,
+        secure: false,
+        auth: {
+            user: "MS_FqIESM@trial-ynrw7gyeo0n42k8e.mlsender.net",
+            pass: "MVZpSXiwZ31hk0GO",
+        },
+        tls: {
+            ciphers: "SSLv3",
+        },
     });
 
     const mailOptions = {
-        from: "your@email.com",
+        from: "\"Origo Market Team\" <noreply@trial-ynrw7gyeo0n42k8e.mlsender.net>",
         to: email,
         subject: "Invitation Code for Registration",
         text: `Your invitation code for registration: ${code}`,

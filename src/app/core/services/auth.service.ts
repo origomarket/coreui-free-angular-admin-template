@@ -130,7 +130,7 @@ export class AuthService {
   async signUp(user: Partial<OrigoSupplierUser>, password: string) {
     try {
       
-      if(!user.email || !password || !user.name || !user.surname || !user.supplier || !user.invitationCode) {
+      if(!user.email || !password || !user.name || !user.surname || !user.supplier) {
         throw Error('One or more field required for registration are missing!');
       }
 

@@ -146,7 +146,7 @@ export class EditComponent implements OnInit {
     userUpdate.supplierId = (this.supplierControl.value as {id: string}).id; //modelValue.supplier?.id;
     let result = await this.authService.updateDomainUser2(userUpdate);
     this.updateSuccess = result[0];
-    this.updateSuccess ? this.profileNotificationService.pushNotification({ message: `Profile updated with success!`, result: Result.SUCCESS }) : this.profileNotificationService.pushNotification({ message: `Profile update failed!`, result: Result.ERROR });
+    this.updateSuccess ? this.profileNotificationService.pushNotification({ message: `Profilo aggiornato con successo!`, result: Result.SUCCESS }) : this.profileNotificationService.pushNotification({ message: `Profile update failed!`, result: Result.ERROR });
 
     this.formGroup.enable();
 
@@ -160,10 +160,10 @@ export class EditComponent implements OnInit {
       let result = await this.authService.submitInvitationCode(this.invitationCodeControl.value);
       let notificationContent: {message: string, result: Result};
       if(result){
-        notificationContent = { message: `Congratulations: Profile enrolled with success!`, result : Result.SUCCESS };
+        notificationContent = { message: `Congratulazioni: Profilo attivato con successo!`, result : Result.SUCCESS };
         this.enrolled = true;
       }else{
-        notificationContent = { message: `Profile enrollment failed!`, result : Result.ERROR };
+        notificationContent = { message: `Attivazione del profilo fallita!`, result : Result.ERROR };
       }
       this.profileNotificationService.pushNotification(notificationContent);
       this.formGroup.enable();

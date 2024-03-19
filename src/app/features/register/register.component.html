@@ -84,10 +84,12 @@
             </c-card-body>
           </c-card>
           <c-alert *ngIf="registed" color="success">
-            <h4 cAlertHeading>Well done!</h4>
-            <p>Aww yeah, you successfully read this important alert message. This example text is going to run a bit longer so that you can see how spacing within an alert works with this kind of content.</p>
+            <h4 cAlertHeading>Congratulazioni!</h4>
+            <p>Il tuo account è stato creato correttamente.</p>
             <hr />
-            <p class="mb-0">Whenever you need to, be sure to use margin utilities to keep things nice and tidy.</p>
+            <p class="mb-0">Ti abbiamo inviato una email di conferma all'indirizzo specificato. Clicca il link nel messaggio per attivare il tuo account.
+                Successivamente clicca <a [routerLink]="['/profile/edit']">qui</a> e insierisci il codice di attivazione ricevuto via email per iniziare a
+                vendere</p>
           </c-alert>
         </c-col>
       </c-row>

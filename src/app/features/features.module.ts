@@ -9,6 +9,7 @@ import { ProfileModule } from './profile/profile.module';
 import { CoreUiDepsModule } from '@coreui-deps/coreui-deps.module';
 import { SharedModule } from '@shared/shared.module';
 import {HttpClientModule} from "@angular/common/http";
+import { RouterModule, Routes } from "@angular/router";
 
 /**
  * Origo feature module
@@ -26,7 +27,8 @@ import {HttpClientModule} from "@angular/common/http";
     ReactiveFormsModule,
     CoreUiDepsModule,
     SharedModule,
-    HttpClientModule
+    HttpClientModule,
+    RouterModule
   ]
 })
 export class FeaturesModule { }

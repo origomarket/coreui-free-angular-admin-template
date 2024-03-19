@@ -46,7 +46,7 @@ exports.sendInvitation = onDocumentCreated("/invitations/{invitation_id}",
         const invitationData = snapshot.data();
         const code = generateInvitationCode(8);
         try {
-            await sendInvitationEmail(code, invitationData.email);
+            await sendInvitationEmail(invitationData.email, code);
             const invitationDataUpdate = {
                 ...invitationData,
                 invitationCode: code,
@@ -66,7 +66,7 @@ exports.validateUser = functions.https.onRequest(async (req, res) => {
         // res.set("Access-Control-Allow-Origin", "*");
         if (req.method === "POST" && req.headers["content-type"]?.toLowerCase() === "application/json") {
             const valid = await validateInvitationCode(req);
-            res.status( valid ? 200 : 403).send({message: valid ? "enrollment ok" : "enrollment failed" });
+            res.status( valid ? 200 : 403).send({message: valid ? "enrollment ok" : "enrollment failed"});
         } else {
             res.status(400).send("Invalid method or content-type");
         }
