@@ -1,98 +1,109 @@
 <div class="bg-light min-vh-100 d-flex flex-row align-items-center">
     <c-container>
-      <c-row class="justify-content-center">
-        <c-col lg="7" md="9" xl="6">
-          <c-card class="mx-4">
-            <c-card-body class="p-4">
-              <form [formGroup]='registerForm' 
-                    (ngSubmit)="onSubmitCredentials()"
-                     cForm>
-                <h1>Register</h1>
-                <p class="text-medium-emphasis">Create your account at Origo!</p>
-                <c-input-group class="mb-3">
+        <c-row class="justify-content-center">
+            <c-col lg="7" md="9" xl="6">
+                <c-card class="mx-4">
+                    <c-card-body class="p-4">
+                        <form [formGroup]='registerForm'
+                              (ngSubmit)="onSubmitCredentials()"
+                              cForm>
+                            <h1>Register</h1>
+                            <p class="text-medium-emphasis">Crea il tuo account Origo!</p>
+                            <c-input-group class="mb-3">
                   <span cInputGroupText>
                     <svg cIcon name="cilUser"></svg>
                   </span>
-                  <input formControlName="firstname" autoComplete="first name" cFormControl placeholder="first name"/>
-                  <span>
-                    <small class="form-text text-danger" *ngIf="getControlErrors('firstname')">{{getCntrolErroMessage('firstname')}}</small>
+                                <input formControlName="firstname" autoComplete="first name" cFormControl placeholder="name"/>
+                                <span>
+                    <small class="form-text text-danger" *ngIf="getControlErrors('firstname')">{{ getCntrolErroMessage('firstname') }}</small>
                   </span>
-                  <!--<c-form-feedback [tooltip]="true" *ngIf="getControlErrors('firstname') !== null" [valid]="false">{{getControlErrors('firstname')!['required']!.message}}</c-form-feedback>-->
-                </c-input-group>
-                <c-input-group class="mb-3">
+                                <!--<c-form-feedback [tooltip]="true" *ngIf="getControlErrors('firstname') !== null" [valid]="false">{{getControlErrors('firstname')!['required']!.message}}</c-form-feedback>-->
+                            </c-input-group>
+                            <c-input-group class="mb-3">
                     <span cInputGroupText>
                       <svg cIcon name="cilUser"></svg>
                     </span>
-                    <input formControlName="secondname" autoComplete="second name" cFormControl placeholder="second name"/>
-                    <span>
-                      <small class="form-text text-danger" *ngIf="getControlErrors('secondname')">{{getCntrolErroMessage('secondname')}}</small>
+                                <input formControlName="secondname" autoComplete="second name" cFormControl placeholder="cognome"/>
+                                <span>
+                      <small class="form-text text-danger" *ngIf="getControlErrors('secondname')">{{ getCntrolErroMessage('secondname') }}</small>
                     </span>
-                </c-input-group>
-                  <c-input-group class="mb-3">
+                            </c-input-group>
+                            <c-input-group class="mb-3">
                     <span cInputGroupText>
                       <svg cIcon name="cilUser"></svg>
                     </span>
-                    <input formControlName="displayName" autoComplete="nick name" cFormControl placeholder="nick name" />
-                    <span>
-                      <small class="form-text text-danger" *ngIf="getControlErrors('displayName')">{{getCntrolErroMessage('displayName')}}</small> 
+                                <input formControlName="displayName" autoComplete="nick name" cFormControl placeholder="nome utente"/>
+                                <span>
+                      <small class="form-text text-danger" *ngIf="getControlErrors('displayName')">{{ getCntrolErroMessage('displayName') }}</small>
                     </span>
-                  </c-input-group>
-                <c-input-group class="mb-3">
+                            </c-input-group>
+                            <c-input-group class="mb-3">
                   <span cInputGroupText>
                     <svg cIcon name="cibMailRu"></svg>
-                  </span>  
-                  <input formControlName="email" autoComplete="email" cFormControl placeholder="Email" />
-                 <span>
-                   <small class="form-text text-danger" *ngIf="getControlErrors('email')">{{getCntrolErroMessage('email')}}</small>
+                  </span>
+                                <input formControlName="email" autoComplete="email" cFormControl placeholder="Email"/>
+                                <span>
+                   <small class="form-text text-danger" *ngIf="getControlErrors('email')">{{ getCntrolErroMessage('email') }}</small>
                  </span>
-                </c-input-group>
-                <c-input-group class="mb-3">
+                            </c-input-group>
+                            <c-input-group class="mb-3">
                   <span cInputGroupText>
                     <svg cIcon name="cilLockLocked"></svg>
                   </span>
-                  <input formControlName="password" autoComplete="new-password" cFormControl placeholder="Password" type="password" /> 
-                 <span>
-                   <small class="form-text text-danger" *ngIf="getControlErrors('password')">{{getCntrolErroMessage('password')}}</small>
+                                <input formControlName="password" autoComplete="new-password" cFormControl placeholder="Password" type="password"/>
+                                <span>
+                   <small class="form-text text-danger" *ngIf="getControlErrors('password')">{{ getCntrolErroMessage('password') }}</small>
                  </span>
-                </c-input-group>
-                <c-input-group class="mb-3">
+                            </c-input-group>
+                            <c-input-group class="mb-3">
                   <span cInputGroupText>
                     <svg cIcon name="cilLockLocked"></svg>
                   </span>
-                  <input formControlName="confirmpassword" autoComplete="new-password" cFormControl placeholder="Repeat password" type="password" />
-                 <span>
-                   <small class="form-text text-danger" *ngIf="getControlErrors('confirmpassword')">{{getCntrolErroMessage('confirmpassword')}}</small>
+                                <input formControlName="confirmpassword" autoComplete="new-password" cFormControl placeholder="Repeat password"
+                                       type="password"/>
+                                <span>
+                   <small class="form-text text-danger" *ngIf="getControlErrors('confirmpassword')">{{ getCntrolErroMessage('confirmpassword') }}</small>
                  </span>
-                </c-input-group>
+                            </c-input-group>
 
-                <c-input-group>
+                            <c-input-group class="mb-3">
                   <span cInputGroupText>
                     <svg cIcon name="cilFactory"></svg>
                   </span>
-                  <select formControlName="supplier" aria-label="suppliers"  cSelect>
-                    <option disabled>Select your supplier</option>
-                    <option [value]="supplier.name" *ngFor="let supplier of suppliers | async">{{supplier.name}}</option>
-                  </select>
-                  <span>
-                    <small class="form-text text-danger" *ngIf="getControlErrors('supplier')">{{getCntrolErroMessage('supplier')}}</small>
-                  </span> 
-                </c-input-group>
-                <div class="d-grid">
-                  <button type="submit" [disabled]="registerForm.invalid" cButton color="success">Create Account</button>
-                </div>
-              </form>
-            </c-card-body>
-          </c-card>
-          <c-alert *ngIf="registed" color="success">
-            <h4 cAlertHeading>Congratulazioni!</h4>
-            <p>Il tuo account è stato creato correttamente.</p>
-            <hr />
-            <p class="mb-0">Ti abbiamo inviato una email di conferma all'indirizzo specificato. Clicca il link nel messaggio per attivare il tuo account.
-                Successivamente clicca <a [routerLink]="['/profile/edit']">qui</a> e insierisci il codice di attivazione ricevuto via email per iniziare a
-                vendere</p>
-          </c-alert>
-        </c-col>
-      </c-row>
+                                <select formControlName="supplier" aria-label="suppliers" cSelect>
+                                    <option disabled>Seleziona il tuo fornitore</option>
+                                    <option [value]="supplier.name" *ngFor="let supplier of suppliers | async">{{ supplier.name }}</option>
+                                </select>
+                                <span>
+                    <small class="form-text text-danger" *ngIf="getControlErrors('supplier')">{{ getCntrolErroMessage('supplier') }}</small>
+                  </span>
+                            </c-input-group>
+                            <div class="d-grid gap-2">
+                                <button type="submit" [disabled]="registerForm.invalid" cButton color="success">Crea</button>
+                            </div>
+                        </form>
+                    </c-card-body>
+                </c-card>
+                <c-card *ngIf="registered !== undefined" class="mx-4">
+                    <c-card-body class="p-4">
+                        <c-alert *ngIf="registered" color="success">
+                            <h4 cAlertHeading>Congratulazioni!</h4>
+                            <p>Il tuo account è stato creato correttamente.</p>
+                            <hr/>
+                            <p class="mb-0">Ti abbiamo inviato una email di conferma all'indirizzo specificato. Clicca il link nel messaggio per attivare il tuo
+                                account.
+                                Successivamente clicca <a [routerLink]="['/profile/edit']">qui</a> e insierisci il codice di attivazione ricevuto via email per
+                                iniziare a
+                                vendere</p>
+                        </c-alert>
+                        <c-alert *ngIf="registered === false" color="danger">
+                            <h4 cAlertHeading>Ops!</h4>
+                            <p>Purtroppo non è stato possibile creare il tuo account!</p>
+                        </c-alert>
+                    </c-card-body>
+                </c-card>
+            </c-col>
+        </c-row>
     </c-container>
-  </div>
+</div>
   

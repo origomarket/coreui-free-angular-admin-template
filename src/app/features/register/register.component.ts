@@ -14,7 +14,7 @@ import { OrigoSupplierUser } from 'src/app/core/model/OrigoSupplierUser';
 export class RegisterComponent implements OnInit {
 
   registerForm: FormGroup;
-  registed = false;
+  registered?: boolean;
   private itemsCollection: AngularFirestoreCollection<{name?: string}>;
   suppliers: Observable<{name?: string}[]>;
   readonly NAME_MIN_LENGTH = 2;
@@ -42,11 +42,11 @@ export class RegisterComponent implements OnInit {
       
       ReactiveFormConfig.set({
         "validationMessage": {
-            "minLength" : `Minimum length is ${this.NAME_MIN_LENGTH}`,
-            "password" : `At least ${this.PWD_MIN_LENGTH} alphanumeric character. At least 1 special character`,
-            "compare": `Passwords not matching!`,
-            "email": "Invalid email format",
-            "required": "required field"
+            "minLength" : `Lunghezza minima ${this.NAME_MIN_LENGTH}`,
+            "password" : `Almeno ${this.PWD_MIN_LENGTH} caratteri alfanumerici. Almeno un carattere speciale`,
+            "compare": `Password e Conferma non sono uguali!`,
+            "email": "Formato email non valido",
+            "required": "Campo obbligatorio"
         }
       });
 
@@ -86,8 +86,13 @@ export class RegisterComponent implements OnInit {
     }
 
     this.authSvc.signUp(user, this.registerForm.controls['password'].value)
-    .then( () => {
-      this.registed = true;
+    .then( (errorMsg) => {
+      if(!errorMsg) {
+        this.registered = true;
+      }else{
+        this.registered = false;
+        console.log(errorMsg);
+      }
       this.registerForm.reset();
     })
   }

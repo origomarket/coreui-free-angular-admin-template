@@ -1,14 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import {NavigationEnd, NavigationError, NavigationStart, Router} from '@angular/router';
-import { ReactiveFormConfig, RxwebValidators } from '@rxweb/reactive-form-validators';
-import { AuthService } from '@core/services/auth.service';
+import {Component, OnInit} from '@angular/core';
+import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import {Router} from '@angular/router';
+import {ReactiveFormConfig, RxwebValidators} from '@rxweb/reactive-form-validators';
+import {AuthService} from '@core/services/auth.service';
+import {firstErrorMessage} from "@shared/utils/reactive-forms-utils";
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html'
 })
 export class LoginComponent implements OnInit {
+
+  public readonly firstErroMessage = firstErrorMessage;
 
   loginForm: FormGroup;
 
@@ -28,9 +31,15 @@ export class LoginComponent implements OnInit {
     this.loginForm.reset();
   }
 
+  get email() : FormControl {
+    return this.loginForm?.get('email') as FormControl;
+  }
 
+  get password() : FormControl {
+    return this.loginForm?.get('password') as FormControl;
+  }
   async onSubmitCredentials() {
-    let error = await this.authService.signIn(this.loginForm.controls['email'].value, this.loginForm.controls['password'].value)
+    let error = await this.authService.signIn(this.email.value, this.password.value)
     this.loginForm.reset();
     !!error ? window.alert(`Login failed with ${error} check your credentials and retry`) : this.router.navigateByUrl('')
 
@@ -39,4 +48,5 @@ export class LoginComponent implements OnInit {
   register() {
     this.router.navigateByUrl("register");
   }
+
 }

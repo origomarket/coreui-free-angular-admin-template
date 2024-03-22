@@ -1,7 +1,10 @@
+
 <c-container>
     <c-row>
         <c-col>
-            <img cImg thumbnail="true" src="assets/img/brand/origo.svg"/>
+            <div class="clearfix">
+                <img cCol md="12" class="float-md-end mb-3 ms-md-3" cImg thumbnail="true" src="assets/img/brand/origo.svg"/>
+            </div>
         </c-col>
     </c-row>
     <c-row>
@@ -11,15 +14,16 @@
                     <c-card-body>
                         <form [formGroup]='loginForm' (ngSubmit)="onSubmitCredentials()" cForm>
                             <h1>Login</h1>
-                            <p class="text-medium-emphasis">Sign In to your account</p>
+                            <p class="text-medium-emphasis">Accedi al tuo account</p>
                             <c-input-group class="mb-3">
                 <span cInputGroupText>
                   <svg cIcon name="cilUser"></svg>
                 </span>
                                 <input formControlName="email" autoComplete="email" cFormControl
                                        placeholder="Email"/>
-                                <small class="form-text text-danger"
-                                       *ngIf="loginForm.controls['email'].errors">{{loginForm.controls['email'].errors?.['email'].message}}</small>
+                                <c-form-feedback *ngIf="email?.invalid"
+                                                 class="custom-invalid-feedback"
+                                                 [valid]="false">{{firstErroMessage(email)}}</c-form-feedback>
                             </c-input-group>
                             <c-input-group class="mb-4">
                 <span cInputGroupText>
@@ -38,7 +42,7 @@
                                 </c-col>
                                 <c-col class="text-right" xs="6">
                                     <button cButton class="px-0" color="link">
-                                        Forgot password?
+                                        Password dimenticata?
                                     </button>
                                 </c-col>
                             </c-row>

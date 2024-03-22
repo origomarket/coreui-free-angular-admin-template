@@ -128,6 +128,7 @@ export class AuthService {
 
   // Sign up with email/password
   async signUp(user: Partial<OrigoSupplierUser>, password: string) {
+    let errorMessage;
     try {
       
       if(!user.email || !password || !user.name || !user.surname || !user.supplier) {
@@ -142,8 +143,9 @@ export class AuthService {
       await this.decorateAndStoreDomainUser(user, credentials.user.uid);
       await sendEmailVerification(credentials.user);
     } catch (error) {
-      window.alert(`signup FireAuth User profile with email ${user.email} failed with reason: ${JSON.stringify(error)}`)
+      errorMessage = `signup FireAuth User profile with email ${user.email} failed with reason: ${JSON.stringify(error)}`;
     }
+    return errorMessage;
   }
 
 
