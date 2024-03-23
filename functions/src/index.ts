@@ -21,22 +21,29 @@ import cors = require("cors");
 // The Cloud Functions for Firebase SDK to set up triggers and logging.
 import {onSchedule} from "firebase-functions/v2/scheduler";
 import {logger} from "firebase-functions";
+import {getDailySoldDocumentName, getPreviousDailySold, getSoldsTotal} from "./statistics/statistics";
 
 admin.initializeApp();
 
-/*exports.computeStatisticsPerSupplier = onSchedule("every 5 hours", async (event) => {
-    // Fetch all user details.
-    const inactiveUsers = await getInactiveUsers();
+exports.computeStatisticsPerSupplier = onSchedule("every 24 hours", async (event) => {
+    const suppliersSnapshot = await admin.firestore().collection("suppliers").get();
+    // Iterate through each supplier
+    suppliersSnapshot.forEach(async (supplierDoc) => {
+        const productsSnapshot = await supplierDoc.ref.collection("products").get();
 
-    // Use a pool so that we delete maximum `MAX_CONCURRENT` users in parallel.
-    const promisePool = new PromisePool(
-        () => deleteInactiveUser(inactiveUsers),
-        MAX_CONCURRENT,
-    );
-    await promisePool.start();
-
-    logger.log("User cleanup finished");
-});*/
+        // Iterate through each product
+        productsSnapshot.forEach(async (productDoc) => {
+            const today = new Date();
+            const dailySoldRef = productDoc.ref.collection("daily_sold").doc(getDailySoldDocumentName(today));
+            const [soldProducts, previousDailySold] = await Promise.all([getSoldsTotal(productDoc.ref), getPreviousDailySold(productDoc.ref)]);
+            const dailySold = soldProducts - previousDailySold;
+            logger.info(`Today ${today.toString()} product ${productDoc.get("name")} sold ${dailySold} times`);
+            logger.info(`dailySoldRef is ${dailySoldRef}`);
+            // Update daily sold statistic
+            await dailySoldRef.set({sold: dailySold}, {merge: true});
+        });
+    });
+});
 
 
 /**

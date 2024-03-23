@@ -17,7 +17,8 @@
                 <svg cIcon name="cilImage"></svg>
             </span>
             <input formControlName="profilePhoto" cFormControl placeholder="select a photo profile" />
-            <button (click)="fileUpload.click()" [active]="true" [color]="'primary'" [disabled]="formGroup.disabled"
+            <button cTooltip="Carica la tua immagine del profilo" (click)="fileUpload.click()" [active]="true" [color]="'primary'"
+                    [disabled]="formGroup.disabled"
                 cButton class="me-1">
                 <svg cIcon class="me-2" name="cilBrowser"></svg>
             </button>
@@ -35,10 +36,15 @@
             <span cInputGroupText>
                 <svg cIcon name="cilPhone"></svg>
             </span>
-            <input type="text" formControlName="phone" placeholder="phone number" (blur)="startPhonNumberVerification()" cFormControl />
+            <input type="text" formControlName="phone" placeholder="phone number" cFormControl />
             <c-form-feedback *ngIf="phoneControl?.invalid"
                              class="custom-invalid-feedback"
                              [valid]="false">{{firstErroMessage(phoneControl)}}</c-form-feedback>
+            <button cTooltip="Verifica il tuo numero" (click)="startPhonNumberVerification()" [active]="true" [color]="'primary'"
+                    [disabled]="formGroup.disabled"
+                    cButton class="me-1">
+                <svg cIcon class="me-2" name="cilSave"></svg>
+            </button>
         </c-input-group>
         <c-input-group class="mb-3" *ngIf="!enrolled">
                   <span cInputGroupText>

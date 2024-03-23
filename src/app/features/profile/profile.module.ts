@@ -6,6 +6,7 @@ import { ProfileRoutingModule } from './profile-routing.module';
 import { CoreUiDepsModule } from '@coreui-deps/coreui-deps.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
+import {TooltipModule} from "@coreui/angular";
 
 
 @NgModule({
@@ -14,11 +15,12 @@ import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
     EditComponent,
     MyMessagesComponent
   ],
-  imports: [
-    ProfileRoutingModule,
-    CoreUiDepsModule,
-    ReactiveFormsModule,
-    RxReactiveFormsModule
-  ]
+    imports: [
+        ProfileRoutingModule,
+        CoreUiDepsModule,
+        ReactiveFormsModule,
+        RxReactiveFormsModule,
+        TooltipModule
+    ]
 })
 export class ProfileModule { }
