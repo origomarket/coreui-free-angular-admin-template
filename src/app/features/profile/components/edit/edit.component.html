@@ -1,52 +1,11 @@
 <c-card-body>
-    <form [formGroup]="formGroup" (ngSubmit)="onSubmitCredentials()" cForm>
-        <c-input-group class="mb-3">
-            <span cInputGroupText>
-                <svg cIcon name="cilUser"></svg>
-            </span>
-            <input formControlName="displayName" autoComplete="nick name" cFormControl placeholder="nick name" />
-            <c-form-feedback *ngIf="displayNameControl?.invalid"
-                             class="custom-invalid-feedback"
-                             [valid]="false">{{firstErroMessage(displayNameControl)}}</c-form-feedback>
-        </c-input-group>
-        <c-input-group class="mb-3">
+    <form [formGroup]="formGroup" cForm>
 
-            <input type="file" class="file-input" (change)="onProfilePhotoSelected($event)" accept=".png,.jpg"
-                #fileUpload>
-            <span cInputGroupText>
-                <svg cIcon name="cilImage"></svg>
-            </span>
-            <input formControlName="profilePhoto" cFormControl placeholder="select a photo profile" />
-            <button cTooltip="Carica la tua immagine del profilo" (click)="fileUpload.click()" [active]="true" [color]="'primary'"
-                    [disabled]="formGroup.disabled"
-                cButton class="me-1">
-                <svg cIcon class="me-2" name="cilBrowser"></svg>
-            </button>
-            <c-form-feedback *ngIf="profilePhotoControl?.invalid"
-                             class="custom-invalid-feedback"
-                             [valid]="false">{{firstErroMessage(profilePhotoControl)}}</c-form-feedback>
-            <div>
-                <c-progress class="mb-3" *ngIf="showProgressImageProfile">
-                    <c-progress-bar [value]="(uploadProgress | async)" variant="striped" color="info">{{(uploadProgress
-                        | async)}}%</c-progress-bar>
-                </c-progress>
-            </div>
-        </c-input-group>
-        <c-input-group class="mb-3">
-            <span cInputGroupText>
-                <svg cIcon name="cilPhone"></svg>
-            </span>
-            <input type="text" formControlName="phone" placeholder="phone number" cFormControl />
-            <c-form-feedback *ngIf="phoneControl?.invalid"
-                             class="custom-invalid-feedback"
-                             [valid]="false">{{firstErroMessage(phoneControl)}}</c-form-feedback>
-            <button cTooltip="Verifica il tuo numero" (click)="startPhonNumberVerification()" [active]="true" [color]="'primary'"
-                    [disabled]="formGroup.disabled"
-                    cButton class="me-1">
-                <svg cIcon class="me-2" name="cilSave"></svg>
-            </button>
-        </c-input-group>
-        <c-input-group class="mb-3" *ngIf="!enrolled">
+        <!-- invitation code -->
+        <app-edit-box *ngIf="!enrolled" [config]="invitationCodeConfig">
+        </app-edit-box>
+
+        <!--<c-input-group class="mb-3" *ngIf="!enrolled">
                   <span cInputGroupText>
                     <svg cIcon name="cilLockLocked"></svg>
                   </span>
@@ -54,48 +13,27 @@
             <c-form-feedback *ngIf="invitationCodeControl?.invalid"
                              class="custom-invalid-feedback"
                              [valid]="false">{{firstErroMessage(invitationCodeControl)}}</c-form-feedback>
-        </c-input-group>
-        <c-input-group class="mb-3">
-            <div id="recaptcha" #recaptcha>
-            </div>
-            <input formControlName="otp" (blur)="updatePhoneNumber()" *ngIf="verificationPhoneId !== ''" cFormControl
-                placeholder="OTP code received via sms" #otp />
-            <c-form-feedback *ngIf="otpControl?.invalid"
-                             class="custom-invalid-feedback"
-                             [valid]="false">{{firstErroMessage(otpControl)}}</c-form-feedback>
-        </c-input-group>
-        <div class="mb-3">
-            <label cLabel for="supplier">Supplier</label>
-            <select aria-label="select example" cSelect required
-            id="supplier" 
-            formControlName="supplier">
-            <option *ngFor="let supplier of suppliers" [ngValue]="supplier">{{supplier.name}}</option>
-            </select>
-            <small class="form-text text-danger"
-            *ngIf="getControlErrors('supplier') !== null">{{getCntrolErroMessage('supplier')}}</small>
-        </div>
-        <!--     <c-input-group class="mb-3">
-        <span cInputGroupText>
-          <svg cIcon name="cilLockLocked"></svg>
-        </span>
-        <input formControlName="password" autoComplete="new-password" cFormControl placeholder="Password" type="password" />
-        <span>
-         <small class="form-text text-danger" *ngIf="getControlErrors('password')">{{getCntrolErroMessage('password')}}</small>
-       </span>
-      </c-input-group>-->
-        <!--<c-input-group class="mb-3">
-        <span cInputGroupText>
-          <svg cIcon name="cilLockLocked"></svg>
-        </span>
-        <input formControlName="confirmpassword" autoComplete="new-password" cFormControl placeholder="Repeat password" type="password" />
-       <span>
-         <small class="form-text text-danger" *ngIf="getControlErrors('confirmpassword')">{{getCntrolErroMessage('confirmpassword')}}</small>
-       </span>
-      </c-input-group>-->
+        </c-input-group>-->
 
-        <div class="d-grid gap-2">
-            <button type="submit" [disabled]="formGroup.invalid" cButton color="success">Aggiorna il profilo</button>
+        <!-- displayName -->
+        <app-edit-box *ngIf="enrolled" [config]="displayNameConfig">
+        </app-edit-box>
+
+        <!-- profile photo -->
+        <app-edit-box *ngIf="enrolled" [config]="profilePhotoConfig">
+        </app-edit-box>
+
+        <!-- phone number -->
+        <app-edit-box *ngIf="enrolled" [config]="phoneNumberConfig">
+        </app-edit-box>
+        <div *ngIf="this.countDown != null">
+            <p>{{this.countDown | async}} secondi rimanenti per verificare il tuo numero!</p>
         </div>
+        <div id="recaptcha" #recaptcha>
+        </div>
+        <app-edit-box *ngIf="enrolled && verificationPhoneId !== ''" [config]="otpConfig">
+        </app-edit-box>
+
     </form>
 </c-card-body>
 

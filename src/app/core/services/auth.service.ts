@@ -182,7 +182,7 @@ export class AuthService {
     }
   }
 
-  async updatePhoneNUmber(phoneNumber: string, otp: string, verificationId: string): Promise<void> {
+  async updatePhoneNUmber(phoneNumber: string, otp: string, verificationId: string): Promise<any> {
     if (!this.auth.currentUser || !this.authenticatedUser) {
       throw Error('current authenticated user is null. Can not update phone number');
     }
@@ -190,11 +190,9 @@ export class AuthService {
     try {
       const phoneCredential = PhoneAuthProvider.credential(verificationId, otp);
       await updatePhoneNumber(this.auth.currentUser, phoneCredential);
-      await this.decorateAndStoreDomainUser({...this.authenticatedUser, phoneNumber:phoneNumber}, this.authenticatedUser?.uid)
-    }catch(e) {
-      console.log(`error while updating phone number - ${e}`)
-    }finally{
-      if(!!this.applicationVerifier) {
+      await this.decorateAndStoreDomainUser({...this.authenticatedUser, phoneNumber: phoneNumber}, this.authenticatedUser?.uid)
+    } finally {
+      if(this.applicationVerifier) {
         this.applicationVerifier.clear();
         this.applicationVerifier = null;
       }
@@ -211,6 +209,12 @@ export class AuthService {
     // return the verificationId to be associated with the otp in order to generate the creds to update the phone.
     const verificationId = await provider.verifyPhoneNumber(phoneNumber, this.applicationVerifier);
     return verificationId;
+  }
+
+  clearRecaptcha() {
+    if(this.applicationVerifier) {
+      this.applicationVerifier.clear();
+    }
   }
 
   async updateDomainUser2(user: Partial<OrigoSupplierUser>): Promise<[boolean, OrigoSupplierUser | undefined]> {

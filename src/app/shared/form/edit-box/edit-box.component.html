@@ -1,0 +1,43 @@
+<ng-container [formGroup]="config?.formGroup!">
+    <c-input-group class="mb-3">
+
+            <span *ngIf="config?.typeIcon" cInputGroupText>
+                <svg cIcon name="{{config?.typeIcon!}}"></svg>
+            </span>
+        <input cFormControl formControlName="{{config?.formControlName}}"  placeholder="{{config?.placeHolder}}" />
+        <c-form-feedback *ngIf="config?.formControl?.invalid"
+                         class="custom-invalid-feedback"
+                         [valid]="false">{{firstErroMessage(config?.formControl!)}}</c-form-feedback>
+
+        <!-- need to use an else template otherwise fileUpload results undeclared -->
+        <ng-container *ngIf="isFileUpload; else noFileUpload">
+            <input type="file" hidden="hidden" class="file-input" (change)="onSubmitFileUpload($event)" accept=".png,.jpg"
+                   #fileUpload>
+            <button cTooltip="{{tooltip}}" (click)="fileUpload.click()" [active]="true"
+                    [color]="'primary'"
+                    [disabled]="config?.formControl?.errors != null"
+                    cButton class="me-1">
+                <svg cIcon class="me-2" name="cilArrowTop"></svg>
+            </button>
+        </ng-container>
+
+    </c-input-group>
+    <ng-container *ngIf="isFileUpload && config?.progressBarPercentage && config?.showProgressBar">
+        <c-progress class="mb-3">
+            <c-progress-bar [value]="(config?.progressBarPercentage |
+            async)" variant="striped"
+                            color="info">{{(config?.progressBarPercentage
+                | async)}}%</c-progress-bar>
+        </c-progress>
+    </ng-container>
+</ng-container>
+
+<ng-template #noFileUpload>
+    <button cTooltip="{{tooltip}}" (click)="onSubmitFormField()" [active]="true"
+            [color]="'primary'"
+            [disabled]="config?.formControl?.errors != null"
+            cButton class="me-1">
+        <svg cIcon class="me-2" name="{{iconAction}}"></svg>
+    </button>
+</ng-template>
+

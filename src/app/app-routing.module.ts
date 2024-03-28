@@ -7,15 +7,14 @@ import {Page500Component} from './views/pages/page500/page500.component';
 import {LoginComponent} from '@features/login/login.component';
 import {LogoutComponent} from '@features/logout/logout.component';
 import {RegisterComponent} from '@features/register/register.component';
-import {AngularFireAuthGuard, AuthPipeGenerator, canActivate, customClaims, hasCustomClaim, redirectUnauthorizedTo} from '@angular/fire/compat/auth-guard';
+import {AngularFireAuthGuard, canActivate, customClaims, emailVerified, redirectUnauthorizedTo} from '@angular/fire/compat/auth-guard';
 import {ProfileComponent} from '@features/profile/profile.component';
-import {filter, map, pipe} from "rxjs";
+import {map, pipe} from "rxjs";
 
 const redirectUnauthorizedToLogin = () => redirectUnauthorizedTo(['/login']);
 const enrolledOnly = () => pipe(customClaims, map(claims => claims.status === 'enrolled'));
-const enrolledOnly2 = () => pipe(customClaims,  filter(claims => claims.status !== 'enrolled'), redirectUnauthorizedTo(['/login']));
-
-
+const redirectUnverifiedTo = (redirect: any[]) => pipe(emailVerified, map(emailVerified => emailVerified || redirect));
+const redirectUnverifiedToLogin = () => redirectUnverifiedTo(['/login']);
 
 
 const routes: Routes = [
@@ -34,7 +33,7 @@ const routes: Routes = [
     children: [
       {
         path: 'profile',
-        ...canActivate(redirectUnauthorizedToLogin),
+        ...canActivate(redirectUnverifiedToLogin),
         loadChildren: () =>
           import('./features/profile/profile.module').then((m) => m.ProfileModule)
 
@@ -47,37 +46,37 @@ const routes: Routes = [
       },
       {
         path: 'dashboard',
-        ...canActivate(redirectUnauthorizedToLogin),
+        ...canActivate(redirectUnverifiedToLogin),
         loadChildren: () =>
           import('./views/dashboard/dashboard.module').then((m) => m.DashboardModule)
       },
       {
         path: 'theme',
-        ...canActivate(redirectUnauthorizedToLogin),
+        ...canActivate(redirectUnverifiedToLogin),
         loadChildren: () =>
           import('./views/theme/theme.module').then((m) => m.ThemeModule)
       },
       {
         path: 'base',
-        ...canActivate(redirectUnauthorizedToLogin),
+        ...canActivate(redirectUnverifiedToLogin),
         loadChildren: () =>
           import('./views/base/base.module').then((m) => m.BaseModule)
       },
       {
         path: 'buttons',
-        ...canActivate(redirectUnauthorizedToLogin),
+        ...canActivate(redirectUnverifiedToLogin),
         loadChildren: () =>
           import('./views/buttons/buttons.module').then((m) => m.ButtonsModule)
       },
       {
         path: 'forms',
-        ...canActivate(redirectUnauthorizedToLogin),
+        ...canActivate(redirectUnverifiedToLogin),
         loadChildren: () =>
           import('./views/forms/forms.module').then((m) => m.CoreUIFormsModule)
       },
       {
         path: 'charts',
-        ...canActivate(redirectUnauthorizedToLogin),
+        ...canActivate(redirectUnverifiedToLogin),
         loadChildren: () =>
           import('./views/charts/charts.module').then((m) => m.ChartsModule)
       },
@@ -89,19 +88,19 @@ const routes: Routes = [
       },
       {
         path: 'notifications',
-        ...canActivate(redirectUnauthorizedToLogin),
+        ...canActivate(redirectUnverifiedToLogin),
         loadChildren: () =>
           import('./views/notifications/notifications.module').then((m) => m.NotificationsModule)
       },
       {
         path: 'widgets',
-        ...canActivate(redirectUnauthorizedToLogin),
+        ...canActivate(redirectUnverifiedToLogin),
         loadChildren: () =>
           import('./views/widgets/widgets.module').then((m) => m.WidgetsModule)
       },
       {
         path: 'pages',
-        ...canActivate(redirectUnauthorizedToLogin),
+        ...canActivate(redirectUnverifiedToLogin),
         loadChildren: () =>
           import('./views/pages/pages.module').then((m) => m.PagesModule)
       },

@@ -1,21 +1,20 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
-import { AuthService } from '@core/services/auth.service';
-import { ToasterComponent } from '@coreui/angular';
-import { OrigoSupplierUser } from 'src/app/core/model/OrigoSupplierUser';
+import {Component, OnInit, ViewChild} from '@angular/core';
+import {ActivatedRoute, NavigationEnd, Router} from "@angular/router";
+import {AuthService} from '@core/services/auth.service';
+import {ToasterComponent} from '@coreui/angular';
+import {OrigoSupplierUser} from 'src/app/core/model/OrigoSupplierUser';
 import {StorageService} from "@core/services/storage.service";
-import {Observable, of} from "rxjs";
 import {Result, UserActionNotificationService} from "@core/services/user-action-notification.service";
+
 @Component({
   selector: 'app-profile',
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.scss']
 })
-export class ProfileComponent implements OnInit/*, AfterViewInit*/{
+export class ProfileComponent implements OnInit {
 
   user: OrigoSupplierUser | undefined = undefined;
   activeTab = 'my-messages'
-  profilePhoto : string | undefined = undefined;
 
    // Backend notifications via toaster
   @ViewChild(ToasterComponent) toaster!: ToasterComponent
@@ -40,7 +39,6 @@ export class ProfileComponent implements OnInit/*, AfterViewInit*/{
         this.activeTab = event.url.substring(event.url.lastIndexOf('/')+1);
       }
     })
-    this.userPhotoUrl().subscribe(url => this.profilePhoto = url)
     this.authService.isUserEnrolled().then(enrolled => {
       if(!enrolled){
         this.notificationSvc.pushNotification({ message: `Inserisci l'invitation-code ricevuto per iniziare ad usare l'app`, result: Result.ERROR, title: 'Gestione' +
@@ -60,9 +58,6 @@ export class ProfileComponent implements OnInit/*, AfterViewInit*/{
     return supplier;
   }
 
-   userPhotoUrl(): Observable<string> {
-    return !!this.user ? this.storageSvc.getDownloadUrlFromPath(`users/${this.user?.uid}/images/profile`) : of('');
-  }
 
   get email() {
     return !!this.user?.email ? this.user.email ?? '' : ''

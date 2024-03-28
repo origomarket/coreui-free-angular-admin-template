@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { StepperComponent } from './stepper/stepper.component';
 import { CdkStepperModule } from '@angular/cdk/stepper'
 import { CoreUiDepsModule } from '@coreui-deps/coreui-deps.module';
+import { EditBoxComponent } from './form/edit-box/edit-box.component';
+import {ReactiveFormsModule} from "@angular/forms";
+import {TooltipModule} from "@coreui/angular";
+import {RxReactiveFormsModule} from "@rxweb/reactive-form-validators";
 
 
 /**
@@ -11,15 +15,19 @@ import { CoreUiDepsModule } from '@coreui-deps/coreui-deps.module';
  */
 @NgModule({
   declarations: [
-    StepperComponent
+    StepperComponent,
+    EditBoxComponent
   ],
   imports: [
     CommonModule,
     CdkStepperModule,
-    CoreUiDepsModule
+    CoreUiDepsModule,
+    ReactiveFormsModule,
+    RxReactiveFormsModule,
   ],
   exports: [
     StepperComponent,
+    EditBoxComponent,
     CdkStepperModule
   ]
 })

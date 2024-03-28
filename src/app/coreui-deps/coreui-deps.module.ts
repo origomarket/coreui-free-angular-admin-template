@@ -22,7 +22,7 @@ import {
   SharedModule,
   ToastModule,
   CarouselModule,
-  ImgModule
+  ImgModule, TooltipModule
 } from '@coreui/angular';
 import { IconModule } from '@coreui/icons-angular';
 import { AppToastComponent } from './components/toast-simple/toast.component';
@@ -58,6 +58,7 @@ import { ToastSampleIconComponent } from './components/toast-simple/toast-sample
     ToastModule,
     ImgModule,
     CarouselModule,
+    TooltipModule
   ],
   exports: [
     CommonModule,
@@ -84,7 +85,8 @@ import { ToastSampleIconComponent } from './components/toast-simple/toast-sample
     AlertModule,
     ToastModule,
     ImgModule,
-    CarouselModule
+    CarouselModule,
+    TooltipModule
   ]
   
 })

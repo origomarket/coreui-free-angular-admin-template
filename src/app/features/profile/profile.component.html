@@ -3,7 +3,7 @@
         <c-col md="4">
             <c-card [color]="'info'" [textColor]="'info'">
                 <c-card-body  class="text-center rounded-top">
-                    <c-avatar size="lg" [src]="profilePhoto">
+                    <c-avatar size="lg" [src]="this.user?.photoURL">
                         <!--<img cCardImg="top" src="./assets/img/avatars/8.jpg">-->
                     </c-avatar>
                     <h5 class="text-white" cCardTitle>{{getDisplayName()}}</h5>

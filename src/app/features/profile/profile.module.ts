@@ -7,6 +7,7 @@ import { CoreUiDepsModule } from '@coreui-deps/coreui-deps.module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RxReactiveFormsModule } from '@rxweb/reactive-form-validators';
 import {TooltipModule} from "@coreui/angular";
+import {SharedModule} from "@shared/shared.module";
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import {TooltipModule} from "@coreui/angular";
         CoreUiDepsModule,
         ReactiveFormsModule,
         RxReactiveFormsModule,
-        TooltipModule
+        TooltipModule,
+        SharedModule
     ]
 })
 export class ProfileModule { }

@@ -5,13 +5,14 @@ import {FormControl, FormGroup, ValidationErrors} from '@angular/forms';
 import {Result, UserActionNotificationService} from '@core/services/user-action-notification.service';
 
 import {alphaNumeric, image, mask, ReactiveFormConfig, required, RxFormBuilder} from '@rxweb/reactive-form-validators';
-import {combineLatest, map, of, tap} from 'rxjs';
+import {combineLatest, concatMap, map, ObservableInput, of, tap} from 'rxjs';
 import {Observable} from 'rxjs/internal/Observable';
 import {OrigoSupplierUser} from 'src/app/core/model/OrigoSupplierUser';
 import {AuthService} from 'src/app/core/services/auth.service';
 import {StorageService} from 'src/app/core/services/storage.service';
-import {Supplier} from '@core/model/supplier';
 import {firstErrorMessage} from "@shared/utils/reactive-forms-utils";
+import {EditBoxComponentConfig} from "@shared/form/edit-box/edit-box.component";
+import {CountdownService} from "@core/services/countdown.service";
 
 
 @Component({
@@ -27,56 +28,29 @@ export class EditComponent implements OnInit {
   verificationPhoneId: string = '';
   updateSuccess = false;
   uploadProgress: Observable<number> = new Observable();
-  profileImageUrl: Promise<string> | undefined = undefined;
-  showProgressImageProfile = false;
-  suppliers$: Observable<SupplierView[]> = of();
-  //supplier: SupplierView | undefined;
-  suppliers: SupplierView[] = [];
+  countDown: Observable<number> | null = null;
   enrolled: boolean = false;
+
+  //Form fields configurations
+  displayNameConfig?: EditBoxComponentConfig;
+  profilePhotoConfig?: EditBoxComponentConfig;
+  phoneNumberConfig?: EditBoxComponentConfig;
+  otpConfig?: EditBoxComponentConfig;
+  invitationCodeConfig?: EditBoxComponentConfig;
 
   constructor(
     private formBuilder: RxFormBuilder,
     private authService: AuthService,
     private cd: ChangeDetectorRef,
     private storageService: StorageService,
-    private afs: AngularFirestore,
-    private profileNotificationService: UserActionNotificationService) {
+    private profileNotificationService: UserActionNotificationService,
+    readonly countdownSvc: CountdownService) {
     this.createForm();
   }
 
 
   ngOnInit(): void {
-    //this.retrieveSuppliers();
     this.initForm();
-  }
-
-  private retrieveSuppliersAndManageDefault(supplier: SupplierView | undefined) {
-    
-    let $suppliers = this.afs.collection<{name: string}>('suppliers').valueChanges({idField: 'id'});
-    
-    if(supplier){
-      // supplier already associated to the user. Update the control when all the values will be available
-      this.suppliers$=$suppliers;
-    }else{
-      // need to show an empty entry in the select to avoid to select an unwanted supplier
-      let $emptyCategory = of({name : '', id: ''});
-      this.suppliers$ = combineLatest([$emptyCategory, $suppliers])
-      .pipe(
-        map(([object, array]) => {
-          // Push the object into the array in 1 position
-          array.forEach( s => console.log(JSON.stringify(s)));
-          array.unshift(object)
-          return array;
-        })
-      )  
-    }
-
-    this.suppliers$.subscribe(suppliers => {
-      this.suppliers = suppliers
-      // set the default option. Note that we have to use the obejct from the list (instead of supplier) in order to work
-      let filteredSupplier = this.suppliers.filter(s => s.id === supplier?.id)[0];
-      this.formGroup.controls['supplier'].patchValue(filteredSupplier);
-    })
   }
 
   createForm() {
@@ -88,7 +62,6 @@ export class EditComponent implements OnInit {
         "otp-invalid": "otp code invalid",
         "displayName-required": "display name cannot be empty",
         "photo-invalid": "photo should be smaller tha 100x100 px",
-        "supplier-missing": "devi selezionare un supplier per poter iniziare a lavorare",
         "notYetEnrolled": "please enter the invitation code to start using the app"
       }
     })
@@ -103,23 +76,64 @@ export class EditComponent implements OnInit {
         this.phoneControl.setValue(user.phoneNumber);
         this.invitationCodeControl.setErrors({notYetEnrolled: true});
         this.invitationCodeControl.markAsTouched();
-        let supplierView$: Observable<SupplierView | undefined>;
-        if(!!user.supplier && !!user.supplierId) {
-          // If a supplier is already associated with the user verify it and in case create the preselected entry
-          supplierView$ = this.afs.doc<Supplier>(`suppliers/${this.user?.supplierId}`).valueChanges({idField: 'id'})
-          .pipe(
-            map((sup: Supplier & { id: string; } | undefined) => {            
-              return (!!sup?.name && !!sup.id) ? new SupplierView(sup?.name, sup.id) : undefined;
-            })
-          )  
-        }else{
-          // No supplier associated yet. Empty entry by default
-          supplierView$ = of(undefined);
+
+        // Initialize the edit-box component for each field
+        this.invitationCodeConfig = {
+          formGroup: this.formGroup,
+          formControl: this.invitationCodeControl,
+          formControlName: "invitationCode",
+          typeIcon: "cilLockLocked",
+          onSubmitCallback: this.submitInvitationCode,
+          placeHolder: "invitation code",
+          actionTooltip: "inserisci l'invitation code recevuto via email",
         }
-        supplierView$.pipe(tap( (sup: SupplierView | undefined) => {
-          this.retrieveSuppliersAndManageDefault(sup)
-        })).subscribe();
+
+         this.displayNameConfig = {
+          formGroup: this.formGroup,
+          formControl: this.displayNameControl,
+          formControlName: "displayName",
+          typeIcon: "cilUser",
+          onSubmitCallback: this.submitDisplayNameUpdate,
+          placeHolder: "nick name",
+          actionTooltip: "aggiorna il tuo nickname",
+        }
+        this.profilePhotoConfig = {
+          formGroup: this.formGroup,
+          formControl: this.profilePhotoControl,
+          formControlName: "profilePhoto",
+          typeIcon: "cilImage",
+          onSubmitCallback: this.onProfilePhotoSelected,
+          placeHolder: "foto del profilo",
+          actionTooltip: "carica la tua foto",
+          progressBarPercentage: this.uploadProgress,
+          showProgressBar: false // note: initialized to false, but need to be set to true in this component while you want to show the bar
+        }
+
+        this.phoneNumberConfig = {
+          formGroup: this.formGroup,
+          formControl: this.phoneControl,
+          formControlName: "phone",
+          typeIcon: "cilPhone",
+          onSubmitCallback: this.startPhonNumberVerification,
+          placeHolder: "numero di telefono",
+          actionTooltip: "inserisci e verifica il tuo telefono",
+        }
+
+        this.otpConfig = {
+          formGroup: this.formGroup,
+          formControl: this.otpControl,
+          formControlName: "otp",
+          typeIcon: "cilPhone",
+          onSubmitCallback: this.updatePhoneNumber,
+          placeHolder: "codice ricevuto via sms",
+          actionTooltip: "conferma",
+        }
+
+        this.formGroup.disable();
+
       }
+
+
     })
   }
 
@@ -132,76 +146,85 @@ export class EditComponent implements OnInit {
     });
   }
 
-  async onSubmitCredentials() {
-    this.formGroup.disable();
-    //const modelValue = this.formGroup.value as ProfileEditFormModel;
+  submitDisplayNameUpdate = async () => {
+    await this.submitFieldUpdate(this.displayNameControl,
+        (uUpdate) => {
+                    uUpdate.displayName = this.displayNameControl.value;
+                    return uUpdate;
+    })
+  }
+
+  /**
+   *  Generic uppdate field utility
+   * @param formControl form control
+   * @param updateField function to update the partial model to p ush oon firestore
+   * @private
+   */
+  private async submitFieldUpdate(formControl: FormControl, updateField: (update : Partial<OrigoSupplierUser>) => Partial<OrigoSupplierUser>) {
+    formControl.disable();
     let userUpdate: Partial<OrigoSupplierUser> = {}
-    if (!!this.profilePhotoControl.value && !!this.profileImageUrl) {
-      userUpdate.photoURL = await this.profileImageUrl;
-    }
-    if (this.displayNameControl.dirty) {
-      userUpdate.displayName = this.displayNameControl.value;
-    }
-    userUpdate.supplier = (this.supplierControl.value as {name: string}).name; //modelValue.supplier?.name;
-    userUpdate.supplierId = (this.supplierControl.value as {id: string}).id; //modelValue.supplier?.id;
+    userUpdate = updateField.call(this, userUpdate);
     let result = await this.authService.updateDomainUser2(userUpdate);
     this.updateSuccess = result[0];
     this.updateSuccess ? this.profileNotificationService.pushNotification({ message: `Profilo aggiornato con successo!`, result: Result.SUCCESS }) : this.profileNotificationService.pushNotification({ message: `Profile update failed!`, result: Result.ERROR });
-
-    this.formGroup.enable();
-
-    // Validate invitation code to enroll the user
-    await this.submitInvitationCode();
   }
 
-  async submitInvitationCode() {
-    if(this.invitationCodeControl.valid) {
-      this.formGroup.disable();
-      let result = await this.authService.submitInvitationCode(this.invitationCodeControl.value);
-      let notificationContent: {message: string, result: Result};
-      if(result){
-        notificationContent = { message: `Congratulazioni: Profilo attivato con successo!`, result : Result.SUCCESS };
-        this.enrolled = true;
-      }else{
-        notificationContent = { message: `Attivazione del profilo fallita!`, result : Result.ERROR };
-      }
-      this.profileNotificationService.pushNotification(notificationContent);
-      this.formGroup.enable();
+  submitInvitationCode = async () => {
+    let result = await this.authService.submitInvitationCode(this.invitationCodeControl.value);
+    let notificationContent: {message: string, result: Result};
+    if(result){
+      notificationContent = { message: `Congratulazioni: Profilo attivato con successo!`, result : Result.SUCCESS };
+      this.enrolled = true;
+    }else{
+      notificationContent = { message: `Attivazione del profilo fallita!`, result : Result.ERROR };
     }
+    this.profileNotificationService.pushNotification(notificationContent);
   }
 
-  startPhonNumberVerification() {
+  startPhonNumberVerification = ()=> {
     let phoneChanged = !!this.user && this.phoneControl.value !== this.user.phoneNumber
     console.log('phonechanged = ' + phoneChanged)
-    if (/*this.formGroup.controls['phone'].dirty*/ phoneChanged) {
+    if (phoneChanged) {
       this.otpControl.enable({ onlySelf: true, emitEvent: false });
 
       let phone = `+${this.phoneControl.value}`;
+      this.countDown = this.countdownSvc.countDown(() => {
+        this.otpControl.disable({ onlySelf: true, emitEvent: false });
+        this.countDown = null;
+        this.verificationPhoneId = '';
+        this.authService.clearRecaptcha();
+      },200);
+
       this.authService.verifyPhoneWithRecaptcha('recaptcha', phone).then(
         (vId) => {
           console.log("verification id is " + vId);
           this.verificationPhoneId = vId;
-          this.cd.detectChanges()
+          this.cd.detectChanges();
         },
         (e) => {
-
           this.profileNotificationService.pushNotification({ message: this.PHONE_UPDATE_ERROR + e, result: Result.ERROR });
+          this.authService.clearRecaptcha();
+          this.verificationPhoneId = '';
           //console.log("Phone number update failed with "+ e) 
         }).catch(e => this.profileNotificationService.pushNotification({ message: this.PHONE_UPDATE_ERROR + e, result: Result.ERROR }));
     }
   }
-
-  async updatePhoneNumber() {
+  updatePhoneNumber = async () => {
     let otpValue = this.otpControl.value;
     let phoneControl = this.phoneControl;
-    if (otpValue.length === 6 && phoneControl.valid) {
+    if (otpValue.length === 6) {
       try {
-        this.authService.updatePhoneNUmber(phoneControl.value, otpValue, this.verificationPhoneId)
-      } finally {
+        await this.authService.updatePhoneNUmber(phoneControl.value, otpValue, this.verificationPhoneId);
+        this.profileNotificationService.pushNotification({ message: "telefono aggiornato", result: Result.SUCCESS });
+      } catch (e) {
+        console.log(`error while updating phone number - ${e}`);
+        this.profileNotificationService.pushNotification({ message: this.PHONE_UPDATE_ERROR + e, result: Result.ERROR });
+      }finally {
         this.verificationPhoneId = '';
+        this.countDown = null;
         this.formGroup.enable();
         this.cd.detectChanges();
-      }
+        }
     }
   }
 
@@ -209,40 +232,33 @@ export class EditComponent implements OnInit {
     return this.formGroup.controls[name].errors
   }
 
-  getCntrolErroMessage(control: string) {
-    let valErr = this.getControlErrors(control);
-    let errMsg = ''
-    if (valErr) {
-      errMsg = Object.values(valErr).map(err => err.message).join()
-    }
-    return errMsg;
-  }
 
-  onProfilePhotoSelected(event: any) {
+  onProfilePhotoSelected = (event: any) => {
     const file: File = event.target.files[0];
 
     if (file) {
       let progress = this.storageService.uploadImage(`users/${this.user?.uid}/images/profile`, file);
       this.uploadProgress = progress[0];
 
-      progress[1].pipe(tap(value => {
+      progress[1].pipe(tap(async value => {
         if (value.state === 'success' && value.totalBytes === value.bytesTransferred) {
-          this.profileImageUrl = getDownloadURL(value.ref);
-          this.showProgressImageProfile = false;
+          //this.profileImageUrl = getDownloadURL(value.ref);
+
+          if (this.profilePhotoControl.value) {
+            const photoURL = await getDownloadURL(value.ref);
+            await this.submitFieldUpdate(this.profilePhotoControl,
+                (uUpdate) => {
+                  uUpdate.photoURL = photoURL;
+                  return uUpdate;
+                })
+          }
+          this.profilePhotoConfig!.showProgressBar = false;
         } else {
-          this.showProgressImageProfile = true;
+          this.profilePhotoConfig!.showProgressBar = true;
         }
       })).subscribe();
 
       this.profilePhotoControl.setValue(file.name);
-
-      /*const formData = new FormData();
-
-      formData.append("thumbnail", file);
-
-      const upload$ = this.http.post("/api/thumbnail-upload", formData);
-
-      upload$.subscribe();*/
     }
   }
 
@@ -266,24 +282,18 @@ export class EditComponent implements OnInit {
     return this.formGroup?.get('otp') as FormControl;
   }
 
-  get supplierControl(): FormControl {
-    return this.formGroup?.get('supplier') as FormControl;
-  }
 
-  public readonly firstErroMessage = firstErrorMessage;
 }
 
 class ProfileEditFormModel {
   @required({ messageKey: 'displayName-required' })
   @alphaNumeric({ messageKey: 'displayName-invalid' })
   public displayName: string = '';
-  @mask({ mask: "(+99)(999)(9999999)", messageKey: 'phone-invalid' }) public phone: string = '';
+  @mask({ mask: "(+99)(999)(9999999)", minLength: 12, messageKey: 'phone-invalid' }) public phone: string = '';
   @mask({ mask: "9.9.9.9.9.9", messageKey: 'otp-invalid' }) public otp: string = '';
   //@url() 
   @image({ maxHeight: 48, maxWidth: 48, messageKey: 'photo-invalid' })
   public profilePhoto = ''
-  @required({messageKey: 'supplier-missing'})
-  supplier?: {name: string, id: string};
   @required({messageKey: 'notYetEnrolled'})
   invitationCode?: string;
 }
