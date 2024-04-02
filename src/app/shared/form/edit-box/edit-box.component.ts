@@ -9,16 +9,28 @@ import {Observable} from "rxjs";
 })
 export class EditBoxComponent implements OnInit {
   readonly firstErroMessage = firstErrorMessage;
+  private defaultConfig : Partial<EditBoxComponentConfig> = {
+    typeIcon: 'cilNotes',
+    actionTooltip: 'Aggiorna Campo'
+  }
+  private _config?: EditBoxComponentConfig;
 
   @Input()
-  config?: EditBoxComponentConfig;
+  set config(val:EditBoxComponentConfig) {
+    this._config = {...this.defaultConfig, ...val};
+  }
+
+  get config(): EditBoxComponentConfig {
+    return this._config!;
+  }
+
   isFileUpload = false;
 
   constructor() { }
 
   ngOnInit(): void {
     if(this.config){
-      this.isFileUpload = this.config.onSubmitCallback.length > 0;
+      this.isFileUpload = this.config.onSubmitCallback && this.config.onSubmitCallback.length > 0;
     }
   }
 

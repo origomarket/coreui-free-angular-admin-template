@@ -2,36 +2,26 @@
     <form [formGroup]="formGroup" cForm>
 
         <!-- invitation code -->
-        <app-edit-box *ngIf="!enrolled" [config]="invitationCodeConfig">
+        <app-edit-box *ngIf="!enrolled" [config]="invitationCodeConfig!">
         </app-edit-box>
 
-        <!--<c-input-group class="mb-3" *ngIf="!enrolled">
-                  <span cInputGroupText>
-                    <svg cIcon name="cilLockLocked"></svg>
-                  </span>
-            <input formControlName="invitationCode" autoComplete="invitation-code" cFormControl placeholder="invitation-code"/>
-            <c-form-feedback *ngIf="invitationCodeControl?.invalid"
-                             class="custom-invalid-feedback"
-                             [valid]="false">{{firstErroMessage(invitationCodeControl)}}</c-form-feedback>
-        </c-input-group>-->
-
         <!-- displayName -->
-        <app-edit-box *ngIf="enrolled" [config]="displayNameConfig">
+        <app-edit-box *ngIf="enrolled" [config]="displayNameConfig!">
         </app-edit-box>
 
         <!-- profile photo -->
-        <app-edit-box *ngIf="enrolled" [config]="profilePhotoConfig">
+        <app-edit-box *ngIf="enrolled" [config]="profilePhotoConfig!">
         </app-edit-box>
 
         <!-- phone number -->
-        <app-edit-box *ngIf="enrolled" [config]="phoneNumberConfig">
+        <app-edit-box *ngIf="enrolled" [config]="phoneNumberConfig!">
         </app-edit-box>
         <div *ngIf="this.countDown != null">
             <p>{{this.countDown | async}} secondi rimanenti per verificare il tuo numero!</p>
         </div>
         <div id="recaptcha" #recaptcha>
         </div>
-        <app-edit-box *ngIf="enrolled && verificationPhoneId !== ''" [config]="otpConfig">
+        <app-edit-box *ngIf="enrolled && verificationPhoneId !== ''" [config]="otpConfig!">
         </app-edit-box>
 
     </form>

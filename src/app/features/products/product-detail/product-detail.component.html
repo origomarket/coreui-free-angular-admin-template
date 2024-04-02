@@ -17,32 +17,22 @@
                         <c-carousel-control [routerLink] caption="Next" direction="next"></c-carousel-control>
                     </c-carousel>
                     <form [formGroup]="productForm!" cForm>
-                        <c-input-group class="mb-3">
-                            <span cInputGroupText id="code-desc-id">Codice Fornitore</span>
-                            <input cFormControl
-                                   formControlName="code"
-                                   id="code" type="text" aria-describedby="code-desc-id"
-                                   aria-label="Codice Fornitore"
-                                   [value]="codeControl.value">
-                            <button cButton color="secondary" type="button" variant="outline" [disabled]="codeControl?.invalid" (click)="updateCode()">aggiorna</button>
-                            <c-form-feedback *ngIf="codeControl?.invalid"
-                                             class="custom-invalid-feedback"
-                                             [valid]="false">{{firstErroMessage(codeControl)}}</c-form-feedback>
-                        </c-input-group>
+                        <app-edit-box [config]="codeConfig!">
+                        </app-edit-box>
+
+                        <app-edit-box [config]="descriptionConfig!">
+                        </app-edit-box>
 
                         <c-input-group class="mb-3">
                             <span cInputGroupText id="type-desc-id">Tipo</span>
-                            <input cFormControl id="type" type="text" aria-describedby="type-desc-id" aria-label="Tipo" [value]="product.type" readOnly>
+                            <select aria-label="select example" cSelect required
+                                    id="productCategory"
+                                    formControlName="category">
+                                <option *ngFor="let cat of categories | async" (click)="updateCategory()" [selected]="cat.name === product.type"
+                                >{{cat.name}}</option>
+                            </select>
                         </c-input-group>
 
-                        <c-input-group class="mb-3">
-                            <span cInputGroupText id="desc-desc-id">Descrizione</span>
-                            <textarea formControlName="description" aria-label="Aggiorna Descrizione" cFormControl>{{descriptionControl.value}}</textarea>
-                            <button cButton color="secondary" type="button" variant="outline" [disabled]="descriptionControl?.invalid" (click)="updateDesc()">aggiorna</button>
-                            <c-form-feedback *ngIf="descriptionControl?.invalid"
-                                             class="custom-invalid-feedback"
-                                             [valid]="false">{{firstErroMessage(descriptionControl)}}</c-form-feedback>
-                        </c-input-group>
 
                         <c-input-group class="mb-3">
                             <span cInputGroupText id="stock-desc-id">Stock {{stockControl?.value}}</span>

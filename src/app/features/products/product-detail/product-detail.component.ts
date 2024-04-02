@@ -11,6 +11,9 @@ import {Colors} from "../../../views/notifications/toasters/toasters.component";
 import {AngularFirestore} from "@angular/fire/compat/firestore";
 import {ProductImagesHelperService} from "@features/products/services/product-images-helper.service";
 import {Result, UserActionNotificationService} from "@core/services/user-action-notification.service";
+import {EditBoxComponentConfig} from "@shared/form/edit-box/edit-box.component";
+import {Observable} from "rxjs";
+import {ProductType} from "@core/model/product-type";
 
 
 @Component({
@@ -28,6 +31,9 @@ export class ProductDetailComponent implements OnInit {
   productConfig?: ProductConfiguration;
   firstErroMessage = firstErrorMessage
   stockInfoIndicator: Colors | undefined = undefined;
+  codeConfig?: EditBoxComponentConfig;
+  descriptionConfig?: EditBoxComponentConfig;
+  categories: Observable<any>;
   constructor(private router: Router,
               private readonly fb: RxFormBuilder,
               private readonly authService: AuthService,
@@ -38,7 +44,7 @@ export class ProductDetailComponent implements OnInit {
               private cd: ChangeDetectorRef) {
     let state = router.getCurrentNavigation()?.extras.state;
     this.product = state?.['product'];
-
+    this.categories = this.afs.collection<{name: string}>('categories').valueChanges();
     ReactiveFormConfig.set({
       "validationMessage": {
         "required": "campo obbligatorio",
@@ -56,11 +62,36 @@ export class ProductDetailComponent implements OnInit {
         this.productConfig = config;
         this.editProductModel = Object.assign(new EditProductModel(), {...this.product})
         this.productForm = this.fb.formGroup(this.editProductModel!);
+        this.codeConfig = {
+          formGroup: this.productForm!,
+          formControl: this.codeControl,
+          formControlName: "code",
+          onSubmitCallback: this.updateCode,
+        }
+        // let the edit component to enable when needed
+        this.codeControl.disable();
+
+        this.descriptionConfig = {
+          formGroup: this.productForm!,
+          formControl: this.descriptionControl,
+          formControlName: "description",
+          onSubmitCallback: this.updateDesc,
+        }
+        // let the edit component to enable when needed
+        this.descriptionControl.disable();
+
+        // updated the under stock label stock
         this.updateStock();
       })
     })
+
+
+
   }
 
+  get categoryControl() : FormControl {
+    return this.productForm?.get('category') as FormControl;
+  }
 
   get priceControl() : FormControl {
     return this.productForm?.get('unitPrice') as FormControl;
@@ -115,16 +146,20 @@ export class ProductDetailComponent implements OnInit {
 
   protected readonly firstErrorMessage = firstErrorMessage;
 
-  adjustUnitPrice() {
-    this.updateDocumentField({unitPrice: this.editProductModel?.unitPrice})
+  adjustUnitPrice = async () => {
+    await this.updateDocumentField({unitPrice: this.editProductModel?.unitPrice})
   }
 
-  updateDesc() {
-    this.updateDocumentField({description: this.editProductModel?.description})
+  updateDesc = async () => {
+    await this.updateDocumentField({description: this.editProductModel?.description})
   }
 
-  updateCode() {
-    this.updateDocumentField({code: this.editProductModel?.code})
+  updateCode = async () => {
+    await this.updateDocumentField({code: this.editProductModel?.code})
+  }
+
+  async updateCategory() {
+    await this.updateDocumentField({type: this.categoryControl.value})
   }
 }
 
@@ -143,5 +178,8 @@ export class EditProductModel {
 
   @required({messageKey: 'required'})
   code?: string
+
+  @required({messageKey: 'required'})
+  category?: ProductType;
 
 }
