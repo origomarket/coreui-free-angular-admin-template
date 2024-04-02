@@ -1,6 +1,36 @@
 <!-- products-overview.component.html -->
- <c-container breakpoint="md">
-    <c-row [xs]="1" [sm]="2" [md]="3" [gutter]="1">
+<c-container breakpoint="md">
+    <c-row>
+        <form [formGroup]="sortAndFilterForm!" cForm>
+            <c-col>
+                <c-input-group>
+                    <span cInputGroupText><svg cIcon name="cilFilter"></svg></span>
+                    <input cFormControl type="text" formControlName="filterValue" placeholder="Filter by name">
+                    <select formControlName="filterField" cSelect>
+                        <option value="">Filtra per...</option>
+                        <option value="name">Name</option>
+                        <option value="type">Categoria</option>
+                        <!-- Add more options as needed -->
+                    </select>
+                </c-input-group>
+            </c-col>
+            <c-col>
+                <c-input-group>
+                <span cInputGroupText>
+                    <svg cIcon name="cilSortAscending"></svg>
+                    <svg cIcon name="cilSortDescending"></svg>
+                </span>
+                    <select formControlName="sortField" cSelect>
+                        <option value="name">Name</option>
+                        <option value="unitPrice">Prezzo</option>
+                        <option value="type">Categoria</option>
+                        <option value="stock">Stock</option>
+                    </select>
+                </c-input-group>
+            </c-col>
+        </form>
+    </c-row>
+    <c-row>
         <c-col *ngFor="let product of products | async" >
 
             <c-card>

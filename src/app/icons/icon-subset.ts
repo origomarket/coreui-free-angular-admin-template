@@ -95,7 +95,10 @@ import {
   cibMailRu,
   cilPhone,
   cilDrinkAlcohol,
-  cilClipboard, cilFlower, cilDinner
+  cilClipboard, cilFlower, cilDinner,
+  cilFilter,
+  cilSortAscending,
+  cilSortDescending,
 } from '@coreui/icons';
 
 export const iconSubset = {
@@ -197,7 +200,10 @@ export const iconSubset = {
   cilUser,
   cilUserFemale,
   cilUserFollow,
-  cilUserUnfollow
+  cilUserUnfollow,
+  cilFilter,
+  cilSortAscending,
+  cilSortDescending,
 };
 
 export enum IconSubset {
@@ -297,5 +303,8 @@ export enum IconSubset {
   cilUser = 'cilUser',
   cilUserFemale = 'cilUserFemale',
   cilUserFollow = 'cilUserFollow',
-  cilUserUnfollow = 'cilUserUnfollow'
+  cilUserUnfollow = 'cilUserUnfollow',
+  cilFilter = 'cilFilter',
+  cilSortAscending = 'cilSortAscending',
+  cilSortDescending = 'cilSortDescending',
 }
