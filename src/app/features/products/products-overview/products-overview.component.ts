@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
 import {Product} from '@core/model/product';
 import {AuthService} from '@core/services/auth.service';
 import {ProductsService} from '@core/services/products.service';
@@ -14,7 +14,7 @@ import {AngularFirestore, QueryFn} from "@angular/fire/compat/firestore";
     templateUrl: './products-overview.component.html',
     styleUrls: ['./products-overview.component.scss']
 })
-export class ProductsOverviewComponent implements OnInit, OnDestroy {
+export class ProductsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
 
     products?: Observable<Product[]>
     subscriptions: Subscription[] = [];
@@ -25,7 +25,11 @@ export class ProductsOverviewComponent implements OnInit, OnDestroy {
                 private readonly resizeImageService: ProductImagesHelperService,
                 private readonly router: Router,
                 private readonly fb: RxFormBuilder,
-                private readonly afs: AngularFirestore,) {
+                private readonly cd: ChangeDetectorRef,) {
+    }
+
+    ngAfterViewInit(): void {
+        this.cd.detectChanges()
     }
 
     ngOnDestroy(): void {

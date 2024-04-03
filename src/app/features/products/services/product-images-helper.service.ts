@@ -1,23 +1,30 @@
 import { Injectable } from '@angular/core';
 import {ResizeImagesService} from "@core/services/resize-images.service";
 import {Product} from "@core/model/product";
-import {mergeMap, of} from "rxjs";
+import {catchError, mergeMap, Observable, of} from "rxjs";
 import {fromPromise} from "rxjs/internal/observable/innerFrom";
+import {SafeUrl} from "@angular/platform-browser";
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductImagesHelperService {
 
-  constructor(private readonly resizeImageService: ResizeImagesService) { }
+
+  constructor(private readonly resizeImageService: ResizeImagesService) {
+  }
 
   resizeProductImages(p: Product): Product {
-    let defaultImage = of('assets/img/avatars/1.jpg');
+    let defaultImage = of('assets/img/brand/origo.svg');
     let productResizedImages = p.imagesUrl?.map((image,i) => {
-      return fromPromise( this.createFileFromURL(image, `img-${p.name}-${i}`))
-          .pipe(
-              mergeMap(file => !!file ? this.resizeImageService.resizeImage2(file, 100, 200, 100, 200) : defaultImage)
-          );
+      return fromPromise(this.createFileFromURL(image, `img-${p.name}-${i}`)).pipe(
+          mergeMap(file => !!file ? this.resizeImageService.resizeImage2(file, 399, 122, 200, 80).pipe(
+              catchError(error => {
+                console.error('Error resizing image:', error);
+                return defaultImage;
+              })
+          ) : defaultImage)
+      );
     });
     if(productResizedImages && productResizedImages?.length <= 0) {
       // if no images available display at least the default image
@@ -33,10 +40,8 @@ export class ProductImagesHelperService {
       const file = new File([blob], filename);
       return file;
     }catch(e){
-      console.error('Error creating iamge file from URL:', e);
+      console.error('Error creating image file from URL:', e);
     }
     return undefined;
   }
-
-
 }

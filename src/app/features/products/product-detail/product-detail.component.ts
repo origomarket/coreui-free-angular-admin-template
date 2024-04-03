@@ -24,7 +24,7 @@ import {ProductType} from "@core/model/product-type";
 })
 export class ProductDetailComponent implements OnInit {
 
-  product: Product;
+  product?: Product;
   productForm?: FormGroup;
   editProductModel?: EditProductModel;
   user: OrigoSupplierUser | undefined = undefined;
@@ -55,31 +55,32 @@ export class ProductDetailComponent implements OnInit {
   }
 
   ngOnInit(): void {
+
+    this.editProductModel = Object.assign(new EditProductModel(), {...this.product})
+    this.productForm = this.fb.formGroup(this.editProductModel!);
+    this.codeConfig = {
+      formGroup: this.productForm!,
+      formControl: this.codeControl,
+      formControlName: "code",
+      onSubmitCallback: this.updateCode,
+    }
+    // let the edit component to enable when needed
+    this.codeControl.disable();
+
+    this.descriptionConfig = {
+      formGroup: this.productForm!,
+      formControl: this.descriptionControl,
+      formControlName: "description",
+      onSubmitCallback: this.updateDesc,
+    }
+    // let the edit component to enable when needed
+    this.descriptionControl.disable();
+
     // TODO: code repeated also in create-product.component. Please refactor caching the call in a storage service
     this.authService.userDomainSubscribe(user =>  {
       this.user = user;
       this.supplierConfigService.productConfig(user.supplier).subscribe(config => {
         this.productConfig = config;
-        this.editProductModel = Object.assign(new EditProductModel(), {...this.product})
-        this.productForm = this.fb.formGroup(this.editProductModel!);
-        this.codeConfig = {
-          formGroup: this.productForm!,
-          formControl: this.codeControl,
-          formControlName: "code",
-          onSubmitCallback: this.updateCode,
-        }
-        // let the edit component to enable when needed
-        this.codeControl.disable();
-
-        this.descriptionConfig = {
-          formGroup: this.productForm!,
-          formControl: this.descriptionControl,
-          formControlName: "description",
-          onSubmitCallback: this.updateDesc,
-        }
-        // let the edit component to enable when needed
-        this.descriptionControl.disable();
-
         // updated the under stock label stock
         this.updateStock();
       })
@@ -123,14 +124,14 @@ export class ProductDetailComponent implements OnInit {
     this.cd.detectChanges();
     // Update only if update is requested and price is not in red
     if(forceUpdate && this.stockInfoIndicator !== Colors.danger) {
-      await this.updateDocumentField({stock: this.editProductModel?.stock, stockLastUpdateDate: new Date(), stockLastIncrement: this.editProductModel?.stock! - this.product.stock});
+      await this.updateDocumentField({stock: this.editProductModel?.stock, stockLastUpdateDate: new Date(), stockLastIncrement: this.editProductModel?.stock! - this.product?.stock!});
     }
   }
 
 
   private async updateDocumentField(update: Partial<Product>) {
     try {
-      const path = `suppliers/${this.user?.supplierId}/products/${this.product.fsId}`;
+      const path = `suppliers/${this.user?.supplierId}/products/${this.product?.fsId}`;
       await this.afs.doc<Product>(path).update(update)
       // Note: is needed to don't modify this.product address (i.e. Objet.assign to don't break the carousel)
       Object.getOwnPropertyNames(update).forEach(p => {
@@ -139,7 +140,7 @@ export class ProductDetailComponent implements OnInit {
       this.actionNotificationService.pushNotification({ message: `Prodotto aggiornato!`, result: Result.SUCCESS, title: 'Gestione Prodotto' })
       this.cd.detectChanges();
     } catch (e) {
-       console.log("Failed to updated document " + this.product.fsId);
+       console.log("Failed to updated document " + this.product?.fsId);
       this.actionNotificationService.pushNotification({ message: `Aggiornamento prodotto fallito!`, result: Result.ERROR, title: 'Gestione Prodotto' })
     }
   }
@@ -159,7 +160,9 @@ export class ProductDetailComponent implements OnInit {
   }
 
   async updateCategory() {
-    await this.updateDocumentField({type: this.categoryControl.value})
+    if(this.categoryControl) {
+      await this.updateDocumentField({type: this.categoryControl.value})
+    }
   }
 }
 

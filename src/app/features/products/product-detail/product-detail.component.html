@@ -2,8 +2,8 @@
     <c-row>
         <c-col>
             <c-card>
-                <c-card-header class="bg-secondary text-white">
-                    {{ product.name | titlecase }}
+                <c-card-header *ngIf="product" class="bg-secondary text-white">
+                    {{ product?.name | titlecase }}
                 </c-card-header>
                 <c-card-body>
                     <c-carousel *ngIf="product && product.imagesUrl && product.imagesUrl.length > 0">
@@ -28,7 +28,7 @@
                             <select aria-label="select example" cSelect required
                                     id="productCategory"
                                     formControlName="category">
-                                <option *ngFor="let cat of categories | async" (click)="updateCategory()" [selected]="cat.name === product.type"
+                                <option *ngFor="let cat of categories | async" (click)="updateCategory()" [selected]="cat.name === product?.type"
                                 >{{cat.name}}</option>
                             </select>
                         </c-input-group>

@@ -1,17 +1,17 @@
 <!-- products-overview.component.html -->
 <c-container breakpoint="md">
-    <c-row>
+    <c-row [xs]="1" [sm]="2" [md]="3" [gutter]="1">
         <form [formGroup]="sortAndFilterForm!" cForm>
             <c-col>
                 <c-input-group>
                     <span cInputGroupText><svg cIcon name="cilFilter"></svg></span>
-                    <input cFormControl type="text" formControlName="filterValue" placeholder="Filter by name">
                     <select formControlName="filterField" cSelect>
                         <option value="">Filtra per...</option>
                         <option value="name">Name</option>
                         <option value="type">Categoria</option>
-                        <!-- Add more options as needed -->
+                        <option value="code">Codice</option>
                     </select>
+                    <input cFormControl type="text" formControlName="filterValue" placeholder="inserisci il testo da cercare qui">
                 </c-input-group>
             </c-col>
             <c-col>
@@ -30,10 +30,9 @@
             </c-col>
         </form>
     </c-row>
-    <c-row>
-        <c-col *ngFor="let product of products | async" >
-
-            <c-card>
+    <c-row [xs]="1" [sm]="2" [md]="3" [gutter]="1">
+        <c-col [sm]="6" *ngFor="let product of products | async" >
+            <c-card class="mb-4">
                 <c-card-header>
                     <c-input-group class="mb-3">
                     <span cInputGroupText>
@@ -55,16 +54,19 @@
                         <c-carousel-control [routerLink] caption="Previous" direction="prev"></c-carousel-control>
                         <c-carousel-control [routerLink] caption="Next" direction="next"></c-carousel-control>
                     </c-carousel>
+                    <!--<img *ngIf="!product?.imagesUrl || product?.imagesUrl?.length! <= 0" id="fallback-img" cCardImg="top"
+                            src="src/assets/img/brand/origo.svg"
+                         loading="lazy" />-->
                     <p cCardText>
                         {{ product.description.substring(0,50) }} ...
                     </p>
-                 </c-card-body>
-                <ul cListGroup [flush]="true">
+                    <ul cListGroup [flush]="true">
                     <li cListGroupItem><span><strong>Codice Fornitore: </strong><em>{{product.code}}</em></span></li>
                     <li cListGroupItem><strong>Prezzo: </strong><em>{{product.currency}}{{ product.unitPrice }}</em></li>
                     <li cListGroupItem><strong>Stock: </strong><em>{{product.stock}}</em></li>
                 </ul>
-            </c-card>      
+                </c-card-body>
+            </c-card>
         </c-col>
     </c-row>
  </c-container>
