@@ -15,8 +15,7 @@ export class RegisterComponent implements OnInit {
 
   registerForm: FormGroup;
   registered?: boolean;
-  private itemsCollection: AngularFirestoreCollection<{name?: string}>;
-  suppliers: Observable<{name?: string}[]>;
+  suppliers: {name?: string, id?: string}[] = [];
   readonly NAME_MIN_LENGTH = 2;
   readonly PWD_MIN_LENGTH = 6;
   readonly PWD_MAX_LENGTH = 30; 
@@ -50,8 +49,17 @@ export class RegisterComponent implements OnInit {
         }
       });
 
-      this.itemsCollection = afs.collection<{name?: string}>('suppliers');
-      this.suppliers = this.itemsCollection.valueChanges().pipe(map(_suppliers => _suppliers.filter(this.filterName)));
+
+      afs.collection<{name?: string}>('suppliers')
+          .snapshotChanges()
+          .pipe(
+          map(actions => actions.map(a => {
+            const data = a.payload.doc.data() as {name?: string};
+            const id = a.payload.doc.id;
+            return { id, ...data };
+          })),
+          map(_suppliers => _suppliers.filter(this.filterName))
+      ).subscribe(suppliers => this.suppliers = suppliers);
 
   }
 
@@ -83,6 +91,7 @@ export class RegisterComponent implements OnInit {
       surname: this.registerForm.controls['secondname'].value,
       email: this.registerForm.controls['email'].value,
       supplier: this.registerForm.controls['supplier'].value,
+      supplierId: this.suppliers.find(s => s.name === this.registerForm.controls['supplier'].value)?.id
     }
 
     this.authSvc.signUp(user, this.registerForm.controls['password'].value)

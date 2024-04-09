@@ -72,7 +72,7 @@
                   </span>
                                 <select formControlName="supplier" aria-label="suppliers" cSelect>
                                     <option disabled>Seleziona il tuo fornitore</option>
-                                    <option [value]="supplier.name" *ngFor="let supplier of suppliers | async">{{ supplier.name }}</option>
+                                    <option [value]="supplier.name" *ngFor="let supplier of suppliers">{{ supplier.name }}</option>
                                 </select>
                                 <span>
                     <small class="form-text text-danger" *ngIf="getControlErrors('supplier')">{{ getCntrolErroMessage('supplier') }}</small>
