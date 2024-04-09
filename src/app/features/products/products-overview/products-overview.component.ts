@@ -2,12 +2,12 @@ import {AfterViewInit, ChangeDetectorRef, Component, OnDestroy, OnInit} from '@a
 import {Product} from '@core/model/product';
 import {AuthService} from '@core/services/auth.service';
 import {ProductsService} from '@core/services/products.service';
-import {catchError, combineLatest, debounceTime, map, mergeWith, Observable, of, Subscription, switchMap, timeout} from 'rxjs';
+import {catchError, combineLatest, debounceTime, map, mergeWith, Observable, of, Subscription, switchMap} from 'rxjs';
 import {Router} from "@angular/router";
 import {ProductImagesHelperService} from "@features/products/services/product-images-helper.service";
-import {FormGroup} from "@angular/forms";
+import {AbstractControl, FormGroup} from "@angular/forms";
 import {prop, RxFormBuilder} from "@rxweb/reactive-form-validators";
-import {AngularFirestore, QueryFn} from "@angular/fire/compat/firestore";
+import {QueryFn} from "@angular/fire/compat/firestore";
 
 
 @Component({
@@ -19,6 +19,9 @@ export class ProductsOverviewComponent implements OnInit, AfterViewInit, OnDestr
     products?: Observable<Product[]>
     subscriptions: Subscription[] = [];
     sortAndFilterForm?: FormGroup;
+    private SORT_ASCENDING = {iconName:'cilSortAscending',algoName: "asc"};
+    private SORT_DESCENDING = {iconName:'cilSortDescending',algoName: "desc"};
+    productsSortOrder: { iconName: string, algoName: string } = this.SORT_ASCENDING;
 
     constructor(readonly productsService: ProductsService,
                 readonly authSvc: AuthService,
@@ -40,11 +43,6 @@ export class ProductsOverviewComponent implements OnInit, AfterViewInit, OnDestr
     ngOnInit(): void {
         this.sortAndFilterForm = this.fb.formGroup(new SortAndFilterModel());
         this.sortAndFilterForm.enable();
-        /*this.products = this.productsService.fetchProducts(this.authSvc.authenticatedUser?.supplierId!)
-            .pipe(map((products: Product[]) => {
-                return products.map(p => this.resizeImageService.resizeProductImages(p));
-            }));*/
-
         this.initializeSortAndFilter();
     }
 
@@ -60,48 +58,56 @@ export class ProductsOverviewComponent implements OnInit, AfterViewInit, OnDestr
         return this.sortAndFilterForm?.get('filterField');
     }
 
+    get sortOrderControl(): AbstractControl | null | undefined {
+        return this.sortAndFilterForm?.get('sortOrder');
+    }
+    get sortOrderValue(): string {
+        return this.sortOrderControl?.value;
+    }
+
+    get sortFieldValue(): SortFields {
+        return this.sortAndFilterForm?.get('sortField')?.value;
+    }
+
     private sortAndFilterFunction(criteria?:SortAndFilterModel): QueryFn | undefined {
         if(!criteria) {
-            return undefined;
-        }
-        if ( (criteria.filterValue == null || !criteria.filterValue || criteria.filterValue == '') && criteria.filterField) {
             return undefined;
         }
 
         return ref => {
             let query: firebase.default.firestore.Query = ref;
-            if (criteria.filterField) {
-                /*
-                  The query you're referring to is using Firebase's orderBy, startAt, and endAt methods to perform a range query.
-                  This is useful when you want to filter results based on a range of values, not just an exact match.
-                  In this case, the query is ordering the results by the filterField, then starting at the filterValue and ending at filterValue + "\uf8ff".
-                  The "\uf8ff" is a very high Unicode value which will include all strings that start with filterValue.
-                 */
-                query = query.orderBy(criteria.filterField).startAt(criteria.filterValue).endAt(criteria.filterValue + "\uf8ff");
-            } else if (criteria.sortField) {
-                // TODO: sorting non funziona se è gia abnilitato il filtering
-                query = query.orderBy(criteria.sortField);
+            if (criteria.filterField !== 'none') {
+                query = query.orderBy(criteria.filterField!).startAt(criteria.filterValue).endAt(criteria.filterValue + "\uf8ff");
+            } else if (criteria.sortField !== 'none') {
+                // Sorting delegated to firebase in case of sorting only otherwise filter + sort is not working
+                query = query.orderBy(criteria.sortField!, (criteria.sortOrder as any) ?? 'asc');
             }
             return query;
         };
-}
+    }
 
     private initializeSortAndFilter( ) {
-
-
 
         this.products = this.sortAndFilterForm?.valueChanges.pipe(
             debounceTime(2000),
             mergeWith(of(undefined)),
             switchMap((filterValue:SortAndFilterModel) => {
-                const products$ = this.productsService.fetchProducts(this.authSvc.authenticatedUser?.supplierId!, this.sortAndFilterFunction(filterValue))
+                const products$ = this.productsService.fetchProducts(
+                    this.authSvc.authenticatedUser?.supplierId!,
+                    filterValue &&
+                    ( filterValue.filterField !== 'none' && filterValue.filterValue && filterValue.filterValue.length >= 3
+                        ||
+                        filterValue.sortField !== 'none')
+                        ? this.sortAndFilterFunction(filterValue)
+                        : undefined
+                );
+
                 return products$.pipe(map((products: any[]) => {
                     return products.map(p => this.resizeImageService.resizeProductImages(p) as Product);
                 }));
             })
         )
     }
-
 
     clone(product: Product) {
         return JSON.parse(JSON.stringify(product));
@@ -135,17 +141,26 @@ export class ProductsOverviewComponent implements OnInit, AfterViewInit, OnDestr
         );
         this.subscriptions.push(subscr);
     }
+
+    sortProducts() {
+        this.productsSortOrder = this.productsSortOrder.iconName === 'cilSortAscending' ? this.SORT_DESCENDING : this.SORT_ASCENDING;
+        this.sortOrderControl?.patchValue(this.productsSortOrder.algoName);
+    }
 }
 
 export class SortAndFilterModel {
     @prop()
-    filterField?: SortAndFilterFields;
+    filterField?: FilterFields = "none";
     @prop()
     filterValue?: string;
     @prop()
-    sortField?: SortAndFilterFields;
+    sortField?: SortFields = "none";
+    @prop()
+    sortOrder?: string
 
 
 }
 
-export type SortAndFilterFields = "name" | "type" | "price" | "stock"
+export type SortFields = "name" | "type" | "unitPrice" | "stock" | "none";
+
+export type FilterFields = "name" | "type" | "code" | "none";

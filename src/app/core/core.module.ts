@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FirebaseDatePipe } from './pipes/firebase-date.pipe';
 import { ProductIconPipe } from './pipes/product-icon.pipe';
+import { CurrencyIconPipe } from './pipes/currency-icon.pipe';
 
 
 
@@ -12,14 +13,16 @@ import { ProductIconPipe } from './pipes/product-icon.pipe';
 @NgModule({
   declarations: [
     FirebaseDatePipe,
-    ProductIconPipe
+    ProductIconPipe,
+    CurrencyIconPipe
   ],
   imports: [
     CommonModule
   ],
-    exports: [
-        FirebaseDatePipe,
-        ProductIconPipe
-    ]
+  exports: [
+      FirebaseDatePipe,
+      ProductIconPipe,
+      CurrencyIconPipe
+  ]
 })
 export class CoreModule { }
