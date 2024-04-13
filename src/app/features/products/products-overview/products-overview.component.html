@@ -1,6 +1,8 @@
 <!-- products-overview.component.html -->
 <c-container breakpoint="md">
-    <c-row [xs]="1" [sm]="2" [md]="3" [gutter]="1">
+
+    <c-header position="sticky" class="header header-sticky" [gutter]="2">
+
         <form [formGroup]="sortAndFilterForm!" cForm>
             <c-col>
                 <c-input-group>
@@ -44,7 +46,8 @@
                 </c-input-group>
             </c-col>
         </form>
-    </c-row>
+    </c-header>
+
     <c-row [xs]="1" [sm]="2" [md]="3" [gutter]="1">
         <c-col [sm]="6" *ngFor="let product of products | async">
             <c-card class="mb-4">

@@ -128,7 +128,7 @@ export class ProductsOverviewComponent implements OnInit, AfterViewInit, OnDestr
                 console.log('All observables have completed:', results);
                 // You can perform actions with the resolved values here
                 productClone.imagesUrl = results;
-                this.router.navigateByUrl(`/products/detail/${product.code}`, {
+                this.router.navigateByUrl(`/products/${product.code}`, {
                     state: {
                         'product': productClone
                     }

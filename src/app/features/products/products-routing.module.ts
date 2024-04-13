@@ -11,7 +11,7 @@ const routes: Routes = [
       { path: '', redirectTo: 'overview', pathMatch: 'full' },
       { path: 'create', component: CreateProductComponent },
       { path: 'overview', component: ProductsOverviewComponent },
-      { path: 'detail/:code', component: ProductDetailComponent, outlet: 'primary' }
+      { path: ':code', component: ProductDetailComponent, outlet: 'primary' }
     ]
 
   }
